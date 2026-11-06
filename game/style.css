@@ -49,6 +49,12 @@ button svg { display: block; }
 .menu { display: flex; flex-direction: column; gap: 8px; width: min(320px, 44vw); }
 .menu button { width: 100%; text-align: left; font-size: 28px; }
 
+.title { padding-bottom: calc(38px + var(--sab)); }
+.corner { position: absolute; bottom: calc(8px + var(--sab)); font-size: 15px; font-weight: 700; color: var(--dim); text-decoration: none; padding: 4px 6px; touch-action: manipulation; text-shadow: 0 1px 2px #000; }
+.corner:hover { color: var(--white); }
+.corner.left { left: calc(14px + var(--sal)); }
+.corner.right { right: calc(14px + var(--sar)); }
+
 /* Modal */
 .modal { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(6, 7, 9, 0.7); padding: calc(10px + var(--sat)) calc(10px + var(--sar)) calc(10px + var(--sab)) calc(10px + var(--sal)); z-index: 30; }
 .modal .box { width: min(720px, 100%); max-height: 100%; overflow-y: auto; touch-action: pan-y; padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; background: rgba(20, 23, 28, 0.985); }
@@ -243,7 +249,8 @@ input[type=text]:focus { border-color: var(--yellow); }
 /* Short phone screens */
 @media (max-height: 460px) {
   .logo { font-size: clamp(42px, 15.5vh, 76px); }
-  .title { justify-content: center; }
+  .title { justify-content: center; padding-bottom: calc(24px + var(--sab)); }
+  .corner { font-size: 13px; bottom: calc(1px + var(--sab)); }
   .tag { margin: 4px 0 8px; font-size: 16px; }
   .title .menu { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; width: min(390px, 56vw); }
   .menu { gap: 5px; }

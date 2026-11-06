@@ -21,6 +21,5 @@ node_modules/
 .DS_Store
 Thumbs.db
 
-# Working notes and test tools stay local
-design/
+# Test tools stay local
 tools/

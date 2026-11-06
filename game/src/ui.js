@@ -126,7 +126,9 @@ export const UI = {
         btn('How to play', () => this.howto()),
         btn('Settings', () => this.settings()),
         btn('Credits', () => this.credits()),
-      )));
+      ),
+      h('a.corner.left', { href: 'https://synapticnoise.com/', target: '_blank', rel: 'noopener' }, 'synapticnoise.com'),
+      h('a.corner.right', { href: 'https://github.com/zeveck/salvage-rights', target: '_blank', rel: 'noopener', title: 'Salvage Rights on GitHub: how it was made' }, 'GitHub')));
   },
   modal(...content) {
     this.closeModal();

@@ -4,7 +4,7 @@
 
 You start with a crate on wheels and a remote control. Win a fight and the rulebook's salvage rights clause lets you unbolt a part from the wreck and keep it. Climb six leagues in six very different arenas, and your robot becomes a trophy case of everyone you beat, painted your way, until you are the champion.
 
-**[▶ Play Salvage Rights](https://zeveck.github.io/salvage-rights/)** in your browser. No install, works on desktop and on phones.
+**[▶ Play Salvage Rights](https://salvagerights.synapticnoise.com/)** in your browser. No install, works on desktop and on phones.
 
 ![The title screen](media/screenshots/title.png)
 
@@ -41,6 +41,24 @@ You are in the driver's booth with a remote control. Your robot steers toward wh
 - On a phone, hold it sideways and use the on-screen controls. You can install it from your browser's menu to play full screen, even offline.
 
 Empty their health, knock them off the arena, or out-damage them by the horn. Hits to the rear do more. Losing costs nothing but pride: retry for free, and the sponsors chip in some scrap. Your garage and progress are saved in your browser.
+
+## How it was made
+
+Salvage Rights was made by [Claude Code](https://claude.com/claude-code) with [gamegen](https://github.com/zeveck/gamegen), from this request:
+
+> A game in which you start with a simple robot and battle other robots in a battle arena, kinda like Battle Bots, but more elaborate robots. When you win you get to take a part from the other
+> robot, which upgrades you. You go through a series of battles getting stronger and moving thorugh the ranks to be the battle champion. Between battles there's a "garage" or something where you can change
+> out your parts/buffs. You can also sell/buy between things in the garage. There should be a variety of arenas. It should probably be a 3d game. You remote control during the fight. You can have cool
+> weapons, powers, etc. You can also redesign/paint your robot. --budget 25 --3d --publish --no-confirm
+
+gamegen designed the game, had review agents polish the design, made the art, music and sound with these plugins, built it, and play-tested it:
+
+- [meshgen](https://github.com/zeveck/meshgen): the 28 robot parts as 3D models, which every robot is assembled from
+- [nanogen](https://github.com/zeveck/nanogen): the concept picture behind each part, arena floors and walls, backdrops and driver portraits
+- [imagegen2](https://github.com/zeveck/imagegen2): the buff chip icons and app icon
+- [audiogen](https://github.com/zeveck/audiogen): the music, sound effects and arena announcer
+
+The design, review logs, progress notes and recorded winning inputs for all 18 fights are in [`design/`](design/).
 
 ## Playing locally
 

@@ -187,7 +187,7 @@ class Showroom {
       dist = short ? 10 : 7.4; h = 2.5;
       xOff = landscapeShift * -(short ? 0.14 : 0.1) * across * dist;
     }
-    if (a === 'title') { xOff = -1.5; dist = 7.3; h = 2.0; look = 0.75; }
+    if (a === 'title') { dist = short ? 9 : 7.3; xOff = short ? -0.2 * across * dist : -1.5; h = 2.0; look = 0.75; }
     if (a === 'salvage') { dist = short ? 9.5 : 7.5; h = 3.0; look = short ? -0.45 : 0.45; }
     if (a === 'podium') { dist = 10; h = 2.8; look = 1.2; xOff = -0.17 * across * dist; }
     if (innerHeight / innerWidth > 0.75) dist *= 1.3;
