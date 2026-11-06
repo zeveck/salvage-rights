@@ -731,3 +731,46 @@ Screen-relative driving, booth camera only (chase cam follows one robot, so it's
 - **Telling robots apart:** Player 1 yellow, Player 2 cyan (rings, tags over each robot, HUD, arrows). "LINK LOST" shows in that player's own HUD; the full-screen static stays off.
 - **Roster:** Slagheap, Sideslip, Mabel's Mallet, Hotfoot, Forgemaster, Permafrost, Lady Faraday, The Foreman, one of each main weapon, flattened to Mk II, equal base health, with Versus-only multipliers in `game/src/versus.js`. Slagheap gets spike wheels. "Your robot" keeps its real parts and chips and is tagged not balanced.
 - **Career separation:** `G.mode` keeps Versus out of `recordWin`, `pending`, `fightSeed`, `seen` and settings. Mute and camera don't write the save during a match. The sim defaults keep career behavior: `versus` off, aim assist for robot 0 only.
+
+## Change: flips are a chance, and Updraft is more forgiving
+
+From the person's own play: Updraft on the High Rise is too hard, and flips land every time with no visible counter.
+
+**Flip rule.** A flipper hit still launches you. On landing, you flip only on a roll against your **Flip risk**; otherwise you land upright, with a "STUCK THE LANDING" callout. Either way you can't be launched again for a few seconds, so nobody gets chain-flipped.
+
+**Flip risk** starts at 50%, and your build lowers it:
+
+| Part | Effect |
+|---|---|
+| Scarab chassis | -10 points |
+| Bulwark, Sovereign chassis | -20 points |
+| Grinder Treads | -25 points |
+| Riveted Plates | -15 points |
+| Gyro Stabilizer chip | Halves the result, and you recover twice as fast |
+
+Risk never goes under 10%. It applies to rivals too, so your own flipper is also weaker against heavy rivals. Everything that was already a counter stays: Aegis Field blocks a launch and Jump Jets dodge it.
+
+**Making it visible.** The garage stats panel shows Flip risk, and it updates when you swap parts. Part descriptions for those parts say so. The Gyro chip goes on sale from League 2, ahead of Sideslip in League 3. (Tin Terror in League 1 also has a flipper, but it's slow and hits lightly.) Scout hints for Sideslip and Updraft name the counters. The garage's Flip risk bar treats lower as better. Order: subtract, halve, floor at 10, whole number.
+
+**The edge.** A flipper launch can't ring you out by itself. While launched or flipped you stop at the kerb, can't start a teeter and can't be knocked over; the normal edge rules return when you're back on your wheels. This replaces "past the kerb by 0.6 m is ring-out, at any height" for flipper launches only. An upright landing does half the landing damage. Landing or recovering gives 6 seconds of launch immunity, so launches are rarer.
+
+**Updraft (fight 13).** Less damage, flipper down from Mk III to Mk II, slower reactions, less inclined to herd you, and it holds its flipper when you're hurt and near an edge. Its scout hint says what to do. Other High Rise fights are unchanged except for the flip rule.
+
+**Done when:** with `tools/updraft.mjs` (slow keyboard bot, build from 4 fights back, 8 weapons), Updraft is at least 75% for every weapon, and under 10% ring-outs; only fights 2, 7 and 13 change, re-recorded singly, and the other 15 match their recordings; `tools/weapons.mjs` shows the player's flipper is still worthwhile; Versus is rechecked, since Sideslip uses a flipper.
+
+### General balance pass (from the person's own play: flips "should probably work less and hurt a bit more", the saw "seemed pretty ineffective")
+
+| Weapon | Before | After | Why |
+|---|---|---|---|
+| Lift Flipper | 26 hit, 18 landing, 1.8 s reload, shove 7 | 58 hit, 40 landing, 2.0 s reload, shove 4.5 | Rarer launches, each one hurts. The 6 s immunity limits launches, not the reload. |
+| Buzz Saw | Reach 0.85, push 0.3 per tick | Reach 1.0, push 0.08 per tick | Its own push shoved the target out of reach. Damage rate unchanged. |
+| Bumper Ram | 11 | 13 | Starter was lagging. |
+| Sledge | 42 | 50 | Lagging. |
+| Rail Cannon | 46 | 54 | Lagging. |
+| Arc Coil | 26 | 24 | Had the highest win rate. |
+
+Measured with `tools/balance.mjs`, compared with the published version. All recordings re-made since these weapons appear throughout the career. Versus tuning re-fitted.
+
+**High Rise falls.** A full career run on these numbers then lost 15 straight to Vertigo by ring-out: its drum pops you into the air, and under 50% health any height carried you over the edge. `tools/edge.mjs` showed why: light drives (Hover Pods, Scrap Wheels) lost 80-100% of the time at about 28-30% health, since one pop reached the edge from almost anywhere, which erased the bottom of the health bar. Mid-air falls and sliding straight over the kerb now need under 15% health, on any open-sided arena. Teetering, which you can reverse out of, still applies below 50%. Vertigo's herding drops from 0.7 to 0.4.
+
+Hover Pods take less extra knockback (-0.1, was -0.3), and Vertigo's scout hint names the counter: heavier drives.

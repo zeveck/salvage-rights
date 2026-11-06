@@ -965,6 +965,7 @@ function onEvent(e) {
     case 'launch': Audio.play('jets', { vol: 0.4 }); Audio.play('crowd-roar', { vol: 0.4 }); break;
     case 'flipped': fx.sparks(e.x, 0.3, e.z, 18, 5); Audio.play('clang-l', { vol: 0.7 }); UI.callout(G.mode === 'versus' ? `P${e.r + 1} FLIPPED` : e.r === 0 ? 'FLIPPED' : 'ON ITS BACK'); break;
     case 'selfright': Audio.play('ratchet', { vol: 0.5 }); break;
+    case 'landed': fx.sparks(e.x, 0.3, e.z, 8, 3); Audio.play('ratchet', { vol: 0.6 }); UI.callout(G.mode === 'versus' ? `P${e.r + 1} STUCK THE LANDING` : e.r === 0 ? 'STUCK THE LANDING' : 'IT LANDED UPRIGHT'); break;
     case 'land': if (e.big) { fx.dust(e.x, e.z); fx.dust(e.x + 0.3, e.z + 0.2); Audio.play('stomp', { vol: 0.5 }); } break;
     case 'stun': if (e.r === 0 || G.mode === 'versus') Audio.tone(320, 0.2, 'sawtooth', 0.07, 140); break;
     case 'linklost': Audio.play('emp', { vol: 0.9 }); if (G.mode !== 'versus' && e.r === 0) { UI.linkLost(e.t); Audio.staticBurst(e.t); } break;

@@ -25,6 +25,8 @@ Eighteen rivals, each built from the same kit of parts as you, so anything you s
 | ![Salvage](media/screenshots/salvage.png) **Salvage:** take a part from every wreck | ![Build](media/screenshots/garage.png) **Build:** chassis, drive, weapon, top mount, power, armor and chips |
 | ![Paint](media/screenshots/paint.png) **Paint:** colors, patterns and finishes, on every part | ![Exchange](media/screenshots/exchange.png) **Exchange:** buy, sell and retrofit |
 
+A flipper launch can leave you on your back, and your build sets the odds: the garage shows your Flip risk, which heavier chassis, Grinder Treads, Riveted Plates and the Gyro chip all lower.
+
 Nine main weapons: Bumper Ram, Buzz Saw, Drum Spinner, Sledge, Lift Flipper, Drill Lance, Flame Projector, Arc Coil and Rail Cannon. Add rockets, mines or an autocannon up top, and a power like a shield, overdrive, an EMP, repair nanites or jump jets.
 
 ## How to play
@@ -71,6 +73,12 @@ Salvage Rights was made by [Claude Code](https://claude.com/claude-code) with [g
 Then, to add a two-player mode:
 
 > --change add a two-player mode on one keyboard --publish --no-confirm
+
+Then, after playing it:
+
+> --change make the High Rise fight against Updraft more forgiving. also, the flip effect seems a bit too effective since it flips you every time (unless there are mods to help, but i didn't see any). --publish --no-confirm
+
+> I think it's because the flip is very effective but doesn't hurt that much, but it makes it a bit tedious to fight, so it should probably work less and hurt a bit more. Also, the buzz saw seemed pretty ineffective when I used it / had it used against me, which was odd. Not saying to make it super strong though. I think were just need a general play balancing pass maybe.
 
 gamegen designed the game, had review agents polish the design, made the art, music and sound with these plugins, built it, and play-tested it:
 

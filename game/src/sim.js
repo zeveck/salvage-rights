@@ -36,7 +36,7 @@ function makeRobot(idx, spec, x, z, heading) {
     idx, name: spec.name, build: spec.build, stats, dmgMult: spec.dmgMult || 1,
     x, z, h: heading, vx: 0, vz: 0, kbx: 0, kbz: 0, y: 0, vy: 0,
     hp: stats.maxHp, energy: 100, maxEnergy: 100,
-    stun: 0, stunImmune: 0, flipped: 0, flipPending: false, lock: false,
+    stun: 0, stunImmune: 0, launchImmune: 0, flipped: 0, flipPending: false, lock: false,
     speedNow: 0, burn: 0, burnDps: 0, slow: 1, teeter: 0, teeterRev: 0, teeterCool: 0, falling: false, overEdge: false,
     // main weapon
     wCd: 0, wWind: 0, wWindDur: 0, wTick: 0, rpm: 0, heat: 0, lockout: 0, firing: false, extend: 0, lungeT: 0, lungeHit: false,
@@ -150,9 +150,10 @@ export class Fight {
     r.stun = Math.max(0, r.stun - DT);
     if (r.stunWas && r.stun === 0) { r.stunWas = false; r.stunImmune = 1.5; }
     r.stunImmune = Math.max(0, r.stunImmune - DT);
+    r.launchImmune = Math.max(0, r.launchImmune - DT);
     if (r.flipped > 0) {
       r.flipped -= DT;
-      if (r.flipped <= 0) { r.flipped = 0; r.stunImmune = 3; this.emit({ type: 'selfright', r: r.idx }); }
+      if (r.flipped <= 0) { r.flipped = 0; r.stunImmune = 3; r.launchImmune = 6; this.emit({ type: 'selfright', r: r.idx }); }
     }
     r.energy = Math.min(r.maxEnergy, r.energy + s.energyRegen * DT);
     r.pCd = Math.max(0, r.pCd - DT);
@@ -290,9 +291,16 @@ export class Fight {
     if (r.flipPending) {
       r.flipPending = false;
       if (r.stunImmune <= 0) {
-        r.flipped = r.stats.flipTime;
-        this.damage(foe, r, r.flipDamage || 3, { kind: 'land', noFacing: true, noMult: true });
-        this.emit({ type: 'flipped', r: r.idx, x: r.x, z: r.z });
+        if (this.rng.next() < r.stats.flipRisk / 100) {
+          r.flipped = r.stats.flipTime;
+          this.damage(foe, r, r.flipDamage || 3, { kind: 'land', noFacing: true, noMult: true });
+          this.emit({ type: 'flipped', r: r.idx, x: r.x, z: r.z });
+        } else {
+          // Landed upright: half the damage, and safe from another launch for as long as after a flip.
+          r.stunImmune = 3; r.launchImmune = 6;
+          this.damage(foe, r, (r.flipDamage || 3) * 0.5, { kind: 'land', noFacing: true, noMult: true });
+          this.emit({ type: 'landed', r: r.idx, x: r.x, z: r.z });
+        }
       }
     }
   }
@@ -434,7 +442,7 @@ export class Fight {
               const dx = foe.x - r.x, dz = foe.z - r.z;
               this.damage(r, foe, w.damage * mk, { kind: w.id, big: true });
               this.knock(foe, dx, dz, w.kb, r);
-              if (w.launch && foe.shieldT <= 0 && foe.stunImmune <= 0 && foe.y < 0.1) {
+              if (w.launch && foe.shieldT <= 0 && foe.stunImmune <= 0 && foe.launchImmune <= 0 && foe.y < 0.1) {
                 foe.vy = w.launch; foe.y = 0.02; foe.flipPending = true; foe.flipDamage = (w.landing || 3) * mk * r.dmgMult;
                 this.emit({ type: 'launch', r: foe.idx, x: foe.x, z: foe.z });
               }
@@ -740,7 +748,18 @@ export class Fight {
     const rad = r.stats.radius * 0.5;
     const az = Math.abs(r.z);
     const side = Math.sign(r.z) || 1;
-    const canFall = r.hp / r.stats.maxHp < 0.5;
+    const canFall = r.hp / r.stats.maxHp < 0.15;
+    // A flipper launch can't throw you out by itself: you stop at the kerb, and the
+    // edge rules start again once you're back on your wheels and can answer them.
+    if (!r.overEdge && (r.flipPending || r.flipped > 0)) {
+      if (az + rad >= E) {
+        r.z = side * (E - rad);
+        if (r.vz * side > 0) r.vz = 0;
+        if (r.kbz * side > 0) r.kbz = 0;
+      }
+      r.teeter = 0;
+      return;
+    }
     if (r.overEdge || (r.y > 0.25 && canFall)) {
       if (az > E + 0.6) this.ringOut(r);
       return;
@@ -762,7 +781,7 @@ export class Fight {
       return;
     }
     const vout = (r.vz + r.kbz) * side;
-    if (r.hp / r.stats.maxHp < 0.3 && vout > 1) { r.overEdge = true; return; }
+    if (r.hp / r.stats.maxHp < 0.15 && vout > 1) { r.overEdge = true; return; }
     r.z = side * (E - rad);
     if (r.vz * side > 0) r.vz = 0;
     if (r.kbz * side > 0) r.kbz = 0;
@@ -773,7 +792,7 @@ export class Fight {
   }
 
   goOver(r) {
-    if (!this.edgeZ || r.hp / r.stats.maxHp >= 0.5) return;
+    if (!this.edgeZ || r.hp / r.stats.maxHp >= 0.5 || r.flipPending || r.flipped > 0) return;
     r.overEdge = true; r.teeter = 0;
     const side = Math.sign(r.z) || 1;
     r.kbz = side * 3;

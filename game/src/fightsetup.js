@@ -7,7 +7,7 @@ import { Driver } from './ai.js';
 // Per-rival tuning, from tools/simtest.mjs: [health x, damage x].
 // Found by tools/autotune.mjs.
 // Found by tools/autotune.mjs and tools/floortune.mjs, then nudged by hand.
-export const TUNE = [null, [0.6, 0.18], [0.884, 0.291], [1.39, 0.255], [2.124, 0.271], [1.888, 0.27], [1.2, 0.182], [1.8, 0.252], [2.1, 0.229], [1.442, 0.452], [1.964, 0.8], [1.442, 0.395], [1.2, 0.36], [2.2, 0.414], [1.775, 0.327], [1.599, 0.432], [1.93, 0.409], [1.15, 0.7], [1.919, 0.275]];
+export const TUNE = [null, [0.6, 0.18], [0.884, 0.291], [1.39, 0.255], [2.124, 0.271], [1.888, 0.27], [1.2, 0.182], [1.8, 0.252], [2.1, 0.229], [1.442, 0.452], [1.964, 0.8], [1.442, 0.395], [1.2, 0.36], [1.6, 0.414], [1.775, 0.327], [1.599, 0.432], [1.93, 0.409], [1.15, 0.7], [1.919, 0.275]];
 
 export function rivalSpec(n, playerBuild, ringerBuild, ngBump) {
   const riv = RIVALS[n - 1];

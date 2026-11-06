@@ -11,7 +11,7 @@ export const VS_BASE_HP = 900;
 export const VS_GARAGE_HP = 2.25;
 
 // Each robot's [health x, damage x], found by tools/versus.mjs.
-export const VS_TUNE = {"3": [1.135, 0.988], "4": [1.195, 1.041], "5": [1.081, 0.94], "6": [0.789, 0.687], "7": [1.143, 0.995], "8": [0.96, 0.836], "12": [1, 0.869], "15": [1.205, 1.049]};
+export const VS_TUNE = {"3": [1.057, 0.921], "4": [1.214, 1.057], "5": [1.135, 0.987], "6": [0.811, 0.707], "7": [1.08, 0.939], "8": [1.03, 0.897], "12": [1.019, 0.885], "15": [1.136, 0.989]};
 
 const SLOTS6 = ['chassis', 'drive', 'main', 'top', 'power', 'armor'];
 

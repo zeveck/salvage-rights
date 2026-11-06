@@ -7,6 +7,8 @@
   weapons, powers, etc. You can also redesign/paint your robot. --budget 25 --3d --publish --no-confirm
 2. --package steam
 3. --change add a two-player mode on one keyboard --publish --no-confirm
+4. --change make the High Rise fight against Updraft more forgiving. also, the flip effect seems a bit too effective since it flips you every time (unless there are mods to help, but i didn't see any). --publish --no-confirm
+   Note during that change: "I think it's because the flip is very effective but doesn't hurt that much, but it makes it a bit tedious to fight, so it should probably work less and hurt a bit more. Also, the buzz saw seemed pretty ineffective when I used it / had it used against me, which was odd. Not saying to make it super strong though. I think were just need a general play balancing pass maybe."
 
 ## Settings
 - 3D: yes
@@ -63,3 +65,8 @@
 - Roster overall 48-51% with bots; individual pairings still lopsided. Not played by two people.
 - Full career run reached the Champion screen after the change; bot took Easy, and lost 12 straight at Updraft before winning.
 - The desktop and Steam builds in dist/ are version 1.0.0, from before this change: repackage to include Versus, as version 1.1.0.
+
+## Change: flips, Updraft and a balance pass (done)
+- Flip Risk 10-50% by build, launch immunity 6 s, launches can't ring you out, flipper hits harder. Saw no longer pushes targets out of reach; Ram, Sledge, Rail up; Arc down. Updraft eased. No new assets.
+- Full career run on the final balance reached the Champion screen with 8 losses (was 20-24), at most 3 in a row. Bot took Easy. Browser replay 17/18, fight 14 still loses in replay only and is won in the full run. Falls on open-sided arenas need under 15% health.
+- All 18 recordings re-made on purpose, since weapons changed. Versus retuned. Numbers are from bots, not people.

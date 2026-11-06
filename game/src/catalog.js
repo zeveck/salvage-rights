@@ -17,25 +17,25 @@ export const PARTS = {
   // Chassis
   crate: { slot: 'chassis', name: 'Crate Mule', hp: 100, cap: 30, armor: 0, weight: 20, radius: 0.75, price: 60, desc: 'A steel crate with ideas above its station.', accel: 1, speedF: 1, chips: 2 },
   wedge: { slot: 'chassis', name: 'Doorstop', hp: 110, cap: 35, speedF: 1.05, armor: 0, weight: 22, radius: 0.80, price: 220, desc: 'Low wedge. Hits on its front do 15% less.', frontGuard: 0.15, accel: 1, chips: 2 },
-  scarab: { slot: 'chassis', name: 'Scarab', hp: 130, cap: 42, speedF: 0.97, armor: 10, weight: 28, radius: 0.85, price: 520, desc: 'Domed shell that shrugs off glancing blows.', accel: 1, chips: 2 },
-  bulwark: { slot: 'chassis', name: 'Bulwark', hp: 170, cap: 50, speedF: 0.88, armor: 5, weight: 40, radius: 1.0, price: 980, desc: 'A rolling slab. Slow to get going.', accel: 0.85, chips: 2 },
-  sovereign: { slot: 'chassis', name: 'Sovereign', hp: 200, cap: 60, speedF: 0.92, armor: 5, weight: 45, radius: 1.1, price: 1900, desc: "The champion's frame. Has a third chip slot.", accel: 1, chips: 3 },
+  scarab: { slot: 'chassis', name: 'Scarab', hp: 130, cap: 42, speedF: 0.97, armor: 10, weight: 28, radius: 0.85, price: 520, desc: 'Domed shell that shrugs off glancing blows. Flip risk -10.', accel: 1, chips: 2 },
+  bulwark: { slot: 'chassis', name: 'Bulwark', hp: 170, cap: 50, speedF: 0.88, armor: 5, weight: 40, radius: 1.0, price: 980, desc: 'A rolling slab. Slow to get going. Flip risk -20.', accel: 0.85, chips: 2 },
+  sovereign: { slot: 'chassis', name: 'Sovereign', hp: 200, cap: 60, speedF: 0.92, armor: 5, weight: 45, radius: 1.1, price: 1900, desc: "The champion's frame. Has a third chip slot. Flip risk -20.", accel: 1, chips: 3 },
   // Drive
   scrapwheels: { slot: 'drive', name: 'Scrap Wheels', speed: 5, turn: 200, accel: 7, grip: 0.6, kbResist: 0, weight: 8, price: 40, iceGrip: 0.35, desc: 'Four wheels of doubtful origin.' },
   spikewheels: { slot: 'drive', name: 'Spike Wheels', speed: 6, turn: 220, accel: 9, grip: 0.85, kbResist: 0, weight: 9, price: 260, iceGrip: 0.8, ramBonus: 1.2, desc: 'Fast, and they bite on ice. Ram damage +20%.' },
-  treads: { slot: 'drive', name: 'Grinder Treads', speed: 3.8, turn: 130, accel: 8, grip: 1, kbResist: 0.4, weight: 16, price: 640, iceGrip: 0.6, pivots: true, push: 1.6, lockSpeed: 0.6, desc: 'Slow, pivots on the spot, shoves hard.' },
+  treads: { slot: 'drive', name: 'Grinder Treads', speed: 3.8, turn: 130, accel: 8, grip: 1, kbResist: 0.4, weight: 16, price: 640, iceGrip: 0.6, pivots: true, push: 1.6, lockSpeed: 0.6, desc: 'Slow, pivots on the spot, shoves hard. Flip risk -25.' },
   legs: { slot: 'drive', name: 'Strider Legs', speed: 4.5, turn: 300, accel: 7, grip: 0.9, kbResist: 0.1, weight: 12, price: 900, iceGrip: 0.7, floorImmune: true, desc: 'Four legs. Steps over lava and charged tiles.' },
-  hover: { slot: 'drive', name: 'Hover Pods', speed: 7, turn: 180, accel: 6, grip: 0.25, kbResist: -0.3, weight: 6, price: 1100, iceGrip: 1, floorImmune: true, pitGrace: 1, windMult: 1.5, lockSpeed: 0.7, desc: 'Fastest there is, drifts, floats over the floor.' },
+  hover: { slot: 'drive', name: 'Hover Pods', speed: 7, turn: 180, accel: 6, grip: 0.25, kbResist: -0.1, weight: 6, price: 1100, iceGrip: 1, floorImmune: true, pitGrace: 1, windMult: 1.5, lockSpeed: 0.7, desc: 'Fastest there is, floats over the floor. Drifts, and gets knocked far.' },
   // Main weapons
-  ram: { slot: 'main', name: 'Bumper Ram', use: 'tap', damage: 11, speedDamage: 2.2, range: 1.0, arc: 70, windup: 0, cooldown: 0.9, kb: 5, weight: 6, price: 40, lunge: 4, lungeTime: 0.25, desc: 'Tap to lunge. Harder at speed.' },
+  ram: { slot: 'main', name: 'Bumper Ram', use: 'tap', damage: 13, speedDamage: 2.2, range: 1.0, arc: 70, windup: 0, cooldown: 0.9, kb: 5, weight: 6, price: 40, lunge: 4, lungeTime: 0.25, desc: 'Tap to lunge. Harder at speed.' },
   drum: { slot: 'main', name: 'Drum Spinner', use: 'hold', damage: 30, range: 0.75, arc: 50, spinup: 1.2, minRpm: 0.3, rpmCost: 0.6, kb: 7, pop: 0.35, recoil: 4, weight: 14, price: 700, desc: 'Hold to spin up. Each hit throws them and costs you RPM.' },
-  saw: { slot: 'main', name: 'Buzz Saw', use: 'hold', dps: 34, range: 0.85, arc: 60, windup: 0.2, kbTick: 0.3, selfSpeed: 0.9, weight: 8, price: 300, desc: 'Hold and grind. Showers of sparks.' },
-  hammer: { slot: 'main', name: 'Sledge', use: 'tap', damage: 42, range: 1.6, arc: 50, windup: 0.4, cooldown: 1.1, kb: 3, weight: 12, price: 420, desc: 'A long overhead swing that really lands.' },
-  flipper: { slot: 'main', name: 'Lift Flipper', use: 'tap', damage: 26, range: 1.1, arc: 60, windup: 0.15, cooldown: 1.8, kb: 7, launch: 6, landing: 18, weight: 10, price: 480, desc: 'Launches them high and lands them on their back.' },
+  saw: { slot: 'main', name: 'Buzz Saw', use: 'hold', dps: 34, range: 1.0, arc: 60, windup: 0.2, kbTick: 0.08, selfSpeed: 0.9, weight: 8, price: 300, desc: 'Hold and grind. Showers of sparks.' },
+  hammer: { slot: 'main', name: 'Sledge', use: 'tap', damage: 50, range: 1.6, arc: 50, windup: 0.4, cooldown: 1.1, kb: 3, weight: 12, price: 420, desc: 'A long overhead swing that really lands.' },
+  flipper: { slot: 'main', name: 'Lift Flipper', use: 'tap', damage: 58, range: 1.1, arc: 60, windup: 0.15, cooldown: 2.0, kb: 4.5, launch: 6, landing: 40, weight: 10, price: 480, desc: 'Launches them high and lands them on their back.' },
   drill: { slot: 'main', name: 'Drill Lance', use: 'hold', dps: 30, range: 1.5, arc: 18, windup: 0.3, ignoreArmor: true, selfSpeed: 0.7, kb: 0, weight: 9, price: 560, desc: 'Hold to extend. Narrow, but ignores armor.' },
   flame: { slot: 'main', name: 'Flame Projector', use: 'hold', dps: 18, burn: 10, burnTime: 3, range: 3.0, arc: 35, heat: 4, lockout: 2, cool: 0.25, weight: 7, price: 520, desc: 'Hold to burn. Watch the heat gauge.' },
-  arc: { slot: 'main', name: 'Arc Coil', use: 'tap', damage: 26, range: 3.0, arc: 120, windup: 0, cooldown: 1.4, kb: 2, stun: 0.4, weight: 7, price: 620, desc: 'Lightning that barely needs aiming. Stuns briefly.' },
-  rail: { slot: 'main', name: 'Rail Cannon', use: 'tap', damage: 46, range: 14, beam: 0.3, windup: 0.6, cooldown: 2.6, kb: 8, recoil: 6, weight: 15, price: 1200, desc: 'Charge, then one long straight shot.' },
+  arc: { slot: 'main', name: 'Arc Coil', use: 'tap', damage: 24, range: 3.0, arc: 120, windup: 0, cooldown: 1.4, kb: 2, stun: 0.4, weight: 7, price: 620, desc: 'Lightning that barely needs aiming. Stuns briefly.' },
+  rail: { slot: 'main', name: 'Rail Cannon', use: 'tap', damage: 54, range: 14, beam: 0.3, windup: 0.6, cooldown: 2.6, kb: 8, recoil: 6, weight: 15, price: 1200, desc: 'Charge, then one long straight shot.' },
   // Top mounts
   autocannon: { slot: 'top', name: 'Autocannon', hold: true, damage: 2.5, ammo: 60, rate: 5, range: 9, arc: 90, kb: 0.2, weight: 8, price: 540, desc: 'Turret that aims itself. Hold to fire.' },
   rockets: { slot: 'top', name: 'Rocket Pod', damage: 18, ammo: 4, rate: 1, speed: 9, homing: 60, splash: 2, kb: 6, weight: 9, price: 640, desc: 'Four homing rockets with splash.' },
@@ -47,7 +47,7 @@ export const PARTS = {
   repair: { slot: 'power', name: 'Nanite Tank', energy: 70, cooldown: 12, heal: 0.15, duration: 3, uses: 3, weight: 5, price: 640, desc: 'Restores health over 3 seconds. Three uses a fight.' },
   jets: { slot: 'power', name: 'Jump Jets', energy: 30, cooldown: 3, height: 2, air: 0.9, damage: 18, stompRadius: 1.2, weight: 6, price: 420, desc: 'Hop over trouble, and land on the rival for damage.' },
   // Armor
-  plates: { slot: 'armor', name: 'Riveted Plates', reduce: 0.15, weight: 10, price: 360, desc: 'Plain heavy steel. 15% less damage.' },
+  plates: { slot: 'armor', name: 'Riveted Plates', reduce: 0.15, weight: 10, price: 360, desc: 'Plain heavy steel. 15% less damage. Flip risk -15.' },
   spikes: { slot: 'armor', name: 'Spike Skirt', reduce: 0.08, contact: 6, weight: 6, price: 440, desc: '8% less damage, and it hurts to touch.' },
 };
 for (const id in PARTS) PARTS[id].id = id;
@@ -58,7 +58,7 @@ export const CHIPS = {
   frame: { name: 'Reinforced Frame', desc: '+15% health', league: 3, price: 600, drop: 3 },
   overclock: { name: 'Overclock', desc: 'Weapon cooldowns 15% shorter', league: 4, price: 700 },
   hazard: { name: 'Hazard Plating', desc: 'Arena hazards do half damage', league: 4, price: 500, drop: 6 },
-  gyro: { name: 'Gyro Stabilizer', desc: 'Recover from flips 50% faster, knockback -20%', league: 5, price: 500, drop: 9 },
+  gyro: { name: 'Gyro Stabilizer', desc: 'Halves flip risk, recover 50% faster, knockback -20%', league: 2, price: 500, drop: 9 },
   ammo: { name: 'Ammo Feed', desc: '+50% top mount ammo', league: 5, price: 450 },
   momentum: { name: 'Momentum Driver', desc: 'Damage +20% above 60% speed', league: 6, price: 900, drop: 15 },
 };
@@ -109,14 +109,14 @@ export const RIVALS = [
   rival({ n: 4, name: 'Slagheap', driver: 'Ivo Brandt', league: 2, build: { chassis: r('crate'), drive: r('treads'), main: r('saw'), top: r('mines'), power: null, armor: r('spikes') }, ai: { react: 500, aim: 14, aggr: 0.5, hazard: 0.1 }, paint: { c1: '#5a5f52', c2: '#d58a1d', pattern: 'camo', finish: 'matte' }, talk: "Slow's fine. You still have to come to me.", hint: 'Treads are slow. Circle it and hit the rear.', tip: 'Hits on the rear do 25% more.' }),
   rival({ n: 5, name: 'Hotfoot', driver: 'Reina Salas', league: 2, build: { chassis: r('wedge'), drive: r('spikewheels'), main: r('flame'), top: r('rockets'), power: r('overdrive'), armor: r('spikes') }, ai: { react: 450, aim: 12, aggr: 0.6, hazard: 0.2 }, paint: { c1: '#e0301e', c2: '#ffc21a', pattern: 'flames', finish: 'gloss' }, talk: "Hope your paint's fireproof.", hint: 'The flame overheats after 4 s. Back off, then pounce.', tip: 'Stay out of the flame until it overheats.' }),
   rival({ n: 6, name: 'Forgemaster', driver: 'Otto Kessler', league: 2, champ: true, portrait: 'otto', build: { chassis: r('scarab'), drive: r('treads'), main: r('drum', 2), top: r('autocannon'), power: r('repair'), armor: r('plates') }, ai: { react: 420, aim: 10, aggr: 0.55, hazard: 0.3 }, paint: { c1: '#3c3f46', c2: '#ff7a1a', pattern: 'solid', finish: 'metallic' }, talk: "I've melted better than you for scrap.", hint: 'Hit it right after its big hit, while the drum is slow.', tip: 'A drum is weak just after it lands a hit.' }),
-  rival({ n: 7, name: 'Sideslip', driver: 'Juno Park', league: 3, build: { chassis: r('wedge'), drive: r('spikewheels', 2), main: r('flipper', 2), top: r('mines'), power: r('jets'), armor: r('plates') }, ai: { react: 400, aim: 10, aggr: 0.6, hazard: 0.5 }, paint: { c1: '#3ac0e8', c2: '#f2f6fa', pattern: 'stripes', finish: 'gloss' }, talk: "Ice is only slippery if you're bad at it.", hint: 'It wants to flip you under a piston. Watch the rings.', tip: 'Red rings mean a piston is about to drop.' }),
+  rival({ n: 7, name: 'Sideslip', driver: 'Juno Park', league: 3, build: { chassis: r('wedge'), drive: r('spikewheels', 2), main: r('flipper', 2), top: r('mines'), power: r('jets'), armor: r('plates') }, ai: { react: 400, aim: 10, aggr: 0.6, hazard: 0.5 }, paint: { c1: '#3ac0e8', c2: '#f2f6fa', pattern: 'stripes', finish: 'gloss' }, talk: "Ice is only slippery if you're bad at it.", hint: 'It wants to flip you under a piston. Plates or a Gyro chip keep you upright.', tip: 'Red rings mean a piston is about to drop.' }),
   rival({ n: 8, name: 'Permafrost', driver: 'Sten Aalto', league: 3, build: { chassis: r('scarab'), drive: r('legs'), main: r('arc', 2), top: r('autocannon'), power: r('shield'), armor: r('spikes') }, ai: { react: 380, aim: 9, aggr: 0.55, hazard: 0.4 }, paint: { c1: '#e8f4ff', c2: '#4a8fd6', pattern: 'checker', finish: 'gloss' }, talk: 'Stand still. For science.', hint: 'Its arc reaches only 3 m. Stay out or rush it after a zap.', tip: 'Rush in right after a zap.' }),
   rival({ n: 9, name: 'Glacier', driver: 'Hilde Varg', league: 3, champ: true, portrait: 'hilde', build: { chassis: r('bulwark'), drive: r('treads', 2), main: r('hammer', 2), top: r('rockets', 2), power: r('repair'), armor: r('plates', 2) }, ai: { react: 350, aim: 8, aggr: 0.6, hazard: 0.5 }, paint: { c1: '#6fb7dd', c2: '#17324d', pattern: 'camo', finish: 'matte' }, talk: 'Nobody has ever hurried me.', hint: 'Too heavy to stop on ice. Let it slide past; strike the rear.', tip: 'Get behind it while it is sliding.' }),
   rival({ n: 10, name: 'Static', driver: 'Tomas Reyes', league: 4, build: { chassis: r('scarab'), drive: r('spikewheels', 2), main: r('saw', 2), top: r('autocannon', 2), power: r('overdrive'), armor: r('plates') }, ai: { react: 340, aim: 8, aggr: 0.65, hazard: 0.5 }, paint: { c1: '#2f2a4a', c2: '#f5e642', pattern: 'carbon', finish: 'gloss' }, talk: "You'll hear me coming. Then nothing.", hint: "60 rounds, then it's dry. Hide behind pylons until then.", tip: 'Pylons block its shots.' }),
   rival({ n: 11, name: 'Ampere', driver: 'Wen Liu', league: 4, build: { chassis: r('bulwark'), drive: r('legs', 2), main: r('arc', 2), top: r('rockets'), power: r('emp'), armor: r('spikes', 2) }, ai: { react: 320, aim: 7, aggr: 0.6, hazard: 0.6 }, paint: { c1: '#1e6f5c', c2: '#b6ff4d', pattern: 'stripes', finish: 'gloss' }, talk: 'I did the math. You lose by a lot.', hint: 'EMP drains it. Close in right after it fires.', tip: 'After its EMP it has no energy left.' }),
   rival({ n: 12, name: 'Lady Faraday', driver: 'Irina Faraday', league: 4, champ: true, portrait: 'irina', build: { chassis: r('scarab', 2), drive: r('hover', 2), main: r('drill', 3), top: r('autocannon', 2), power: r('shield', 2), armor: r('plates', 2) }, ai: { react: 300, aim: 6, aggr: 0.7, hazard: 0.6 }, paint: { c1: '#7a2bbf', c2: '#e6c15a', pattern: 'solid', finish: 'metallic' }, talk: 'Do try to keep up, darling.', hint: 'The drill is narrow. Hit from the side.', tip: 'Move sideways out of the drill.' }),
-  rival({ n: 13, name: 'Updraft', driver: 'Kai Moreno', league: 5, build: { chassis: r('wedge', 2), drive: r('hover', 2), main: r('flipper', 3), top: r('rockets', 2), power: r('jets', 2), armor: r('spikes', 2) }, ai: { react: 290, aim: 6, aggr: 0.7, hazard: 0.8 }, paint: { c1: '#f07a5f', c2: '#fbe9d0', pattern: 'stripes', finish: 'gloss' }, talk: "Nice view from up here. Last one you'll get.", hint: "Stay off the stripes. Don't let it get under you.", tip: 'Keep away from the open edges.' }),
-  rival({ n: 14, name: 'Vertigo', driver: 'Anya Petrov', league: 5, build: { chassis: r('scarab', 2), drive: r('legs', 2), main: r('drum', 3), top: r('mines', 2), power: r('jets', 2), armor: r('plates', 2) }, ai: { react: 280, aim: 5, aggr: 0.75, hazard: 0.7 }, paint: { c1: '#22303f', c2: '#ff4d6d', pattern: 'flames', finish: 'gloss' }, talk: 'Look down. Everyone does.', hint: 'It jumps before it hits. Move on the hop, catch it landing.', tip: 'Move when it hops, hit when it lands.' }),
+  rival({ n: 13, name: 'Updraft', driver: 'Kai Moreno', league: 5, build: { chassis: r('wedge', 2), drive: r('hover', 2), main: r('flipper', 2), top: r('rockets', 2), power: r('jets', 2), armor: r('spikes', 2) }, ai: { react: 340, aim: 10, aggr: 0.7, hazard: 0.3, edgeMercy: true }, paint: { c1: '#f07a5f', c2: '#fbe9d0', pattern: 'stripes', finish: 'gloss' }, talk: "Nice view from up here. Last one you'll get.", hint: 'Treads, plates or a Gyro chip keep you upright. Stay near the middle.', tip: 'Keep away from the open edges.' }),
+  rival({ n: 14, name: 'Vertigo', driver: 'Anya Petrov', league: 5, build: { chassis: r('scarab', 2), drive: r('legs', 2), main: r('drum', 3), top: r('mines', 2), power: r('jets', 2), armor: r('plates', 2) }, ai: { react: 280, aim: 5, aggr: 0.75, hazard: 0.4 }, paint: { c1: '#22303f', c2: '#ff4d6d', pattern: 'flames', finish: 'gloss' }, talk: 'Look down. Everyone does.', hint: 'Its drum throws light robots. Treads or Legs hold the floor. Hit it as it lands.', tip: 'Move when it hops, hit when it lands.' }),
   rival({ n: 15, name: 'The Foreman', driver: 'Gus Hale', league: 5, champ: true, portrait: 'gus', build: { chassis: r('bulwark', 2), drive: r('treads', 3), main: r('rail', 3), top: r('rockets', 3), power: r('shield', 2), armor: r('plates', 3) }, ai: { react: 260, aim: 4, aggr: 0.65, hazard: 0.7 }, paint: { c1: '#f2b705', c2: '#1c1c1c', pattern: 'stripes', finish: 'matte' }, talk: "Shift's over, kid. Clock out.", hint: 'The rail fires straight. Never drive straight at it.', tip: 'Never drive straight at the rail.' }),
   rival({ n: 16, name: 'Duchess', driver: 'Amara Voss', league: 6, build: { chassis: r('sovereign', 2), drive: r('legs', 3), main: r('flame', 3), top: r('mines', 3), power: r('overdrive', 3), armor: r('spikes', 3) }, ai: { react: 250, aim: 4, aggr: 0.8, hazard: 0.8 }, paint: { c1: '#5b1a6e', c2: '#d9b44a', pattern: 'carbon', finish: 'gloss' }, talk: 'You may kneel. The mines are behind you.', hint: "Don't chase it. Cut it off.", tip: 'Cut off its path rather than chase it.' }),
   rival({ n: 17, name: 'Dead Ringer', driver: 'Unnamed', league: 6, mirror: true, build: null, ai: { react: 260, aim: 6, aggr: 0.6, hazard: 0.6 }, paint: { c1: '#0c0c10', c2: '#d81e2c', pattern: 'solid', finish: 'gloss' }, talk: "Nice robot. I'll take it from here.", hint: "It's your build, in black. You know its weak spot.", tip: 'It fights the way your robot fights. Find the gap.' }),
@@ -172,9 +172,19 @@ export function computeStats(build, opts = {}) {
     cooldownMult: chips.includes('overclock') ? 0.85 : 1,
     hazardMult: chips.includes('hazard') ? 0.5 : 1,
     flipTime: chips.includes('gyro') ? 0.75 : 1.5,
+    flipRisk: flipRisk(build),
     ammoMult: chips.includes('ammo') ? 1.5 : 1,
     momentum: chips.includes('momentum'),
   };
+}
+
+// The chance, in percent, that a flipper launch leaves you on your back.
+const FLIP_RISK = { scarab: 10, bulwark: 20, sovereign: 20, treads: 25, plates: 15 };
+export function flipRisk(build) {
+  let risk = 50;
+  for (const sl of ['chassis', 'drive', 'armor']) if (build[sl]) risk -= FLIP_RISK[build[sl].id] || 0;
+  if ((build.chips || []).includes('gyro')) risk /= 2;
+  return Math.max(10, Math.round(risk));
 }
 
 // The six numbers the garage shows, 0-100ish.
@@ -197,5 +207,6 @@ export function garageStats(build) {
     load: s.load,
     cap: Math.round(s.cap),
     over: s.over,
+    flip: s.flipRisk,
   };
 }

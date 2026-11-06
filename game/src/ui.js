@@ -252,9 +252,9 @@ export const UI = {
   statsPanel(b, compare) {
     const s = garageStats(b);
     const c = compare ? garageStats(compare) : null;
-    const row = (label, val, max, suffix = '', cmp, bad) => {
+    const row = (label, val, max, suffix = '', cmp, bad, lowerIsBetter) => {
       let diff = null;
-      if (cmp !== undefined && cmp !== val) diff = cmp > val ? 'up' : 'down';
+      if (cmp !== undefined && cmp !== val) diff = (cmp > val) !== !!lowerIsBetter ? 'up' : 'down';
       return h('.bar-row', {},
         h('.lab', {}, h('span', {}, label), h('b', { class: diff || '' }, `${cmp !== undefined ? cmp : val}${suffix}`)),
         h(`.bar${bad ? '.over' : ''}`, {}, h('i', { style: { width: `${Math.min(100, ((cmp !== undefined ? cmp : val) / max) * 100)}%` } })));
@@ -265,6 +265,7 @@ export const UI = {
       row('Armor', s.armor, 45, '%', c ? c.armor : undefined),
       row('Speed', s.speed, 8, ' m/s', c ? c.speed : undefined),
       row('Damage', s.damage, 40, '/s', c ? c.damage : undefined),
+      row('Flip risk', s.flip, 50, '%', c ? c.flip : undefined, false, true),
       row('Load', (c || s).load, Math.max((c || s).cap, (c || s).load), ` / ${(c || s).cap}`, undefined, (c || s).over > 0));
   },
   tabBuild(body) {
@@ -310,7 +311,7 @@ export const UI = {
       const before = garageStats(cur), after = garageStats(b2);
       const diffs = [];
       const d = (lab, a, b, suf = '') => { if (a !== b) diffs.push(`${lab} ${b > a ? '+' : ''}${+(b - a).toFixed(1)}${suf}`); };
-      d('Health', before.health, after.health); d('Armor', before.armor, after.armor, '%'); d('Speed', before.speed, after.speed); d('Damage', before.damage, after.damage);
+      d('Health', before.health, after.health); d('Armor', before.armor, after.armor, '%'); d('Speed', before.speed, after.speed); d('Damage', before.damage, after.damage); d('Flip risk', before.flip, after.flip, '%');
       const rp = q.mk < 3 ? retrofitPrice(q.id, q.mk) : null;
       list.append(h('.item', {},
         thumb(q.id),

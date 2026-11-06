@@ -192,6 +192,8 @@ export class Driver {
         case 'drum': inp.fire = d < 7; break;
         case 'saw': case 'drill': inp.fire = d < w.range + 0.8 && inArc; break;
         case 'hammer': case 'flipper': {
+          // Updraft won't finish a hurt player at the edge with a cheap launch.
+          if (this.p.edgeMercy && this.f.edgeZ && Math.abs(foe.z) > this.f.edgeZ - 3 && foe.hp / foe.stats.maxHp < 0.5) break;
           if (me.wCd <= 0 && me.wWind <= 0 && d < w.range + 0.1 && inArc && foe.y < 0.3) inp.firePressed = true;
           break;
         }

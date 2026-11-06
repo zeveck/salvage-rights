@@ -110,3 +110,12 @@ Reviewers found no new structural problems; they found numeric and coverage gaps
 | Select: no un-ready, arena swaps, no info | should | Judgment | Fixed |
 | Fairness test only covers bots, no kiter | should | Judgment | Partly: leader drain added; no kiter bot, and only people can really judge fairness |
 | Can't tell which robot is yours | should | Design check | Fixed: colors, tags, HUD status |
+
+## Flips and Updraft change: one short round
+
+| Finding | Severity | Evidence | Outcome |
+|---|---|---|---|
+| Ring-outs happen mid-air, before the flip roll, so the roll can't help | must | sim.js constrainEdge, hand calculation of reach | Fixed: launched or flipped robots stop at the kerb and can't go over |
+| Lowering `hazard` barely changes where hits send you | should | ai.js flank and steering | Fixed: Updraft also holds its flipper when you're hurt near the edge; measured by ring-out rate |
+| "Comfortably winnable" has no number; a full re-record would hide regressions | should | tools/updraft.mjs, make-solutions.mjs | Fixed: numeric targets; re-record 2, 7 and 13 only; other 15 must match |
+| Flip risk colors inverted; Gyro's League 2 reason wrong; rounding undefined | should | ui.js row, catalog.js | Fixed: lower-is-better row and picker diff; reason corrected; order defined |
