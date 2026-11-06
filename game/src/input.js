@@ -14,6 +14,8 @@ export const Input = {
   stick: { x: 0, y: 0 },
   touchFireHeld: false, touchTopHeld: false,
   usingTouch: false,
+  usingPad: false,
+  paused: false,
   active: false, // true during a fight
   onPause: null, onMute: null, onCamera: null, onAny: null,
 
@@ -83,8 +85,15 @@ export const Input = {
     const pads = navigator.getGamepads ? navigator.getGamepads() : [];
     for (const p of pads) {
       if (!p) continue;
-      if (Math.abs(p.axes[0]) > 0.2 || Math.abs(p.axes[1]) > 0.2) { x = p.axes[0]; y = -p.axes[1]; }
       const b = (i) => p.buttons[i] && p.buttons[i].pressed;
+      if (Math.abs(p.axes[0]) > 0.2 || Math.abs(p.axes[1]) > 0.2) { x = p.axes[0]; y = -p.axes[1]; }
+      else if (b(12) || b(13) || b(14) || b(15)) {
+        x = (b(15) ? 1 : 0) - (b(14) ? 1 : 0);
+        y = (b(12) ? 1 : 0) - (b(13) ? 1 : 0);
+        const l = hyp(x, y); if (l > 1) { x /= l; y /= l; }
+      }
+      if (b(3) && !this.pad3 && this.onCamera) this.onCamera();
+      this.pad3 = b(3);
       if (b(0) && !this.pad0) firePressed = true;
       if (b(2) && !this.pad2) topPressed = true;
       if (b(1) && !this.pad1) powerPressed = true;

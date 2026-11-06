@@ -30,6 +30,7 @@ button:hover { background: #363d48; border-color: #566070; }
 button:active { transform: translateY(1px); }
 button:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
 button:disabled { opacity: 0.42; cursor: default; }
+.padfocus { outline: 3px solid var(--yellow) !important; outline-offset: 2px; box-shadow: 0 0 14px rgba(255, 194, 26, 0.75); position: relative; z-index: 2; }
 button.primary { background: var(--orange); border-color: #ff8a44; color: #16100b; }
 button.primary:hover { background: #ff7f33; }
 button.yellow { background: var(--yellow); border-color: #ffd65c; color: #16130a; }

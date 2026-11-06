@@ -38,6 +38,7 @@ You are in the driver's booth with a remote control. Your robot steers toward wh
 - **Lock on to the rival:** Q or Tab
 - **Change camera:** C
 - **Pause:** Esc or P. **Mute:** M.
+- **Controller:** stick or d-pad to drive and move around menus, A main weapon and confirm, X top mount, B power and back, LB lock on, Y camera, Start pause.
 - On a phone, hold it sideways and use the on-screen controls. You can install it from your browser's menu to play full screen, even offline.
 
 Empty their health, knock them off the arena, or out-damage them by the horn. Hits to the rear do more. Losing costs nothing but pride: retry for free, and the sponsors chip in some scrap. Your garage and progress are saved in your browser.
@@ -73,4 +74,4 @@ then open http://localhost:8000.
 
 An idea by Rich Conlan.
 
-Fonts: Teko and Rajdhani, under the SIL Open Font License (bundled in `game/fonts`). Built on three.js, under the MIT License (`game/vendor`). Music and sound effects created with ElevenLabs.
+Fonts: Teko and Rajdhani, under the SIL Open Font License (bundled in `game/fonts`). Built on three.js, under the MIT License (`game/vendor`).

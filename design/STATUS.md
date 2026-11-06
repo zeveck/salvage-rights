@@ -5,6 +5,7 @@
   robot, which upgrades you. You go through a series of battles getting stronger and moving thorugh the ranks to be the battle champion. Between battles there's a "garage" or something where you can change
   out your parts/buffs. You can also sell/buy between things in the garage. There should be a variety of arenas. It should probably be a 3d game. You remote control during the fight. You can have cool
   weapons, powers, etc. You can also redesign/paint your robot. --budget 25 --3d --publish --no-confirm
+2. --package steam
 
 ## Settings
 - 3D: yes
@@ -15,8 +16,10 @@
 - Rounds: 2
 - Publish: first to github.io; then moved to salvagerights.synapticnoise.com with the gallery and making-of, from .env settings
 - Credit: Rich Conlan (from github)
-- ElevenLabs tier: unknown (restricted key; settle with the first sound)
+- ElevenLabs tier: creator (reported by the setup check). No credit line needed; selling is allowed.
 - Available: imagegen2, nanogen, audiogen, meshgen (2047 credits), playwright-cli, Pillow (installed this run)
+
+- Desktop version: 1.0.0
 
 ## Phases
 - [x] 1 Brief: written
@@ -42,9 +45,14 @@
 - Found by full-run test: a player could get stuck at the first champion (weak ram, weak flipper, nothing to buy). Added sponsor deals (next league's stock after 2 straight losses), Exchange from win 1, stronger ram and flipper. Weapons rebalanced; rivals being retuned against the mean of all nine weapons.
 - A full run earlier looped for 45 minutes without anyone noticing. Rule for this project now: every long run writes a progress line per fight, has a time limit, stops after 6 straight losses at one fight, and is watched by a monitor that warns if it stops advancing.
 - TODO: retune, re-record solutions, replay all 18 in the browser, full run on desktop, phone pass, first-load film, offline test, final reviews, polish, README, social card, publish to github.io as salvage-rights. Credit: Rich Conlan.
-- ElevenLabs plan: 128 kbps worked (paid by the rule), but a 2-request concurrency limit looks like the free plan. Credit line kept in the game and README to be safe.
+- ElevenLabs plan: creator. Credit line removed.
 
 ## Finished
 - First live at the github.io address and checked at desktop and phone sizes: no errors, offline cache reports 100%.
 - Known: not played by a human; feel and sound unjudged. Fight 14's browser replay differs from Node by about one hit near the end, cause unknown; it has been won in full playthroughs.
 - Serve locally with tools/serve.py (caching off).
+
+## Packaged
+- Version 1.0.0, Windows and Linux, plus Steam files in dist/steam/ (dist/ is not committed). STEAM_APP_ID, STEAM_DEPOT_WINDOWS and STEAM_DEPOT_LINUX: not set yet.
+- Not run: Linux app (no GTK in the container), Windows app. Controller tested with a simulated pad. Desktop buttons tested in a browser with a stand-in bridge.
+- The online version doesn't have controller menus or the credit change until the next publish.

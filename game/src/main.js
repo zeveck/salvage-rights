@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { RIVALS, LEAGUES, PARTS, DEFAULT_PAINT, STARTER_BUILD } from './catalog.js';
 import { Save, currentBuild, prizeFor, recordWin, recordLoss, salvageOffer, lockRinger, salvagePayout } from './state.js';
 import { Input } from './input.js';
+import { PadNav } from './padnav.js';
 import { Audio } from './audio.js';
 import { DT } from './sim.js';
 import { Driver } from './ai.js';
@@ -78,6 +79,8 @@ function loop(now) {
   lastT = now;
   if (dt > 0.1) dt = 0.1;
   if (G.paused) Input.pollPauseButton();
+  const driving = !G.paused && ['fight', 'countdown', 'ko', 'loading', 'boot'].includes(G.state);
+  PadNav.update(dt, !driving, `${G.state}:${document.querySelectorAll('#ui .modal').length}`);
   if (!G.frozen) frame(dt);
   if (G.scene && !G.stepping && !G.noRender) renderer.render(G.scene, camera);
   // Lower the resolution if a phone can't keep up.
@@ -664,10 +667,10 @@ function tutorialPrompts(dt) {
   const touch = Input.usingTouch;
   let msg = '';
   if (G.promptStep === 0) {
-    msg = touch ? 'Drag on the left to drive' : 'Drive with WASD or the arrow keys';
+    msg = Input.usingPad ? 'Drive with the left stick' : touch ? 'Drag on the left to drive' : 'Drive with WASD or the arrow keys';
     if (G.movedDist > 2) G.promptStep = 1;
   } else if (G.promptStep === 1) {
-    if (d < 4) msg = touch ? 'Tap FIRE to lunge' : 'Tap SPACE to lunge';
+    if (d < 4) msg = Input.usingPad ? 'Tap A to lunge' : touch ? 'Tap FIRE to lunge' : 'Tap SPACE to lunge';
     if (me.dealt > 0) { G.promptStep = 2; G.promptT = 0; }
   } else if (G.promptStep === 2) {
     if (G.slowHit) msg = 'Hit it at speed: back off, then charge';
@@ -680,15 +683,16 @@ function tutorialPrompts(dt) {
 function teachList() {
   const me = G.fight.robots[0];
   const touch = Input.usingTouch;
-  const fireKey = touch ? 'FIRE' : 'SPACE';
+  const pad = Input.usingPad;
+  const fireKey = pad ? 'A' : touch ? 'FIRE' : 'SPACE';
   const list = [];
   const main = me.build.main && PARTS[me.build.main.id];
-  if (main) list.push(['main_' + main.id, main.use === 'hold' ? (touch ? `${main.name}: tap FIRE to switch it on` : `${main.name}: HOLD SPACE to run it`) : `${main.name}: tap ${fireKey} to strike`]);
+  if (main) list.push(['main_' + main.id, main.use === 'hold' ? (pad ? `${main.name}: HOLD A to run it` : touch ? `${main.name}: tap FIRE to switch it on` : `${main.name}: HOLD SPACE to run it`) : `${main.name}: tap ${fireKey} to strike`]);
   const top = me.build.top && PARTS[me.build.top.id];
-  if (top) list.push(['top_' + top.id, touch ? `${top.name}: use TOP` : `${top.name}: press K`]);
+  if (top) list.push(['top_' + top.id, pad ? `${top.name}: press X` : touch ? `${top.name}: use TOP` : `${top.name}: press K`]);
   const pow = me.build.power && PARTS[me.build.power.id];
-  if (pow) list.push(['power_' + pow.id, touch ? `${pow.name}: use POWER, it costs energy` : `${pow.name}: press L, it costs energy`]);
-  if (G.rivalN >= 2) list.push(['lock', touch ? 'LOCK always faces the rival, but slows you' : 'Q locks on to the rival, but slows you']);
+  if (pow) list.push(['power_' + pow.id, pad ? `${pow.name}: press B, it costs energy` : touch ? `${pow.name}: use POWER, it costs energy` : `${pow.name}: press L, it costs energy`]);
+  if (G.rivalN >= 2) list.push(['lock', pad ? 'LB locks on to the rival, but slows you' : touch ? 'LOCK always faces the rival, but slows you' : 'Q locks on to the rival, but slows you']);
   return list;
 }
 function fightPrompts(dt) {
@@ -707,7 +711,7 @@ function fightPrompts(dt) {
   else if (d < 1.2) G.noHitT += dt;
   const main = me.build.main && PARTS[me.build.main.id];
   if (G.noHitT > 6 && G.teachT <= 0 && main) {
-    msg = main.use === 'hold' ? (Input.usingTouch ? 'Tap FIRE to switch your weapon on' : 'HOLD SPACE to run your weapon') : `Point your ${main.name} at the rival and hit fire`;
+    msg = main.use === 'hold' ? (Input.usingPad ? 'HOLD A to run your weapon' : Input.usingTouch ? 'Tap FIRE to switch your weapon on' : 'HOLD SPACE to run your weapon') : `Point your ${main.name} at the rival and hit fire`;
     G.teachT = 3; G.noHitT = 0;
   }
   G.teachMsg = msg;
@@ -1036,6 +1040,7 @@ function koDone() {
 }
 
 // ---------------------------------------------------------------- input wiring
+addEventListener('mousemove', () => { if (PadNav.active) PadNav.clear(); });
 Input.init();
 Input.onAny = () => Audio.unlock();
 Input.onPause = () => { if (G.paused) Flow.resume(); else Flow.pause(); };
@@ -1200,7 +1205,7 @@ async function bootInner() {
   b.style.opacity = 0;
   setTimeout(() => b.remove(), 380);
   const local = ['localhost', '127.0.0.1'].includes(location.hostname);
-  if ('serviceWorker' in navigator && (!local || new URLSearchParams(location.search).has('sw'))) {
+  if (!window.desktop && 'serviceWorker' in navigator && (!local || new URLSearchParams(location.search).has('sw'))) {
     navigator.serviceWorker.addEventListener('message', (e) => { if (e.data && e.data.offline !== undefined) UI.offline = e.data.offline; });
     navigator.serviceWorker.register('sw.js').catch(() => {});
     // Every launch: finish caching anything still missing, and report how far it got.

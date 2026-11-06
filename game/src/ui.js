@@ -126,6 +126,7 @@ export const UI = {
         btn('How to play', () => this.howto()),
         btn('Settings', () => this.settings()),
         btn('Credits', () => this.credits()),
+        window.desktop ? btn('Quit', () => window.desktop.quit()) : null,
       ),
       h('a.corner.left', { href: 'https://synapticnoise.com/', target: '_blank', rel: 'noopener' }, 'synapticnoise.com'),
       h('a.corner.right', { href: 'https://github.com/zeveck/salvage-rights', target: '_blank', rel: 'noopener', title: 'Salvage Rights on GitHub: how it was made' }, 'GitHub')));
@@ -150,6 +151,8 @@ export const UI = {
       touch
         ? h('.keys', {}, h('b', {}, 'Left side'), h('span', {}, 'Drag to drive'), h('b', {}, 'Fire'), h('span', {}, 'Main weapon. Hold-type weapons switch on and off with a tap'), h('b', {}, 'Top'), h('span', {}, 'Top mount, if fitted'), h('b', {}, 'Power'), h('span', {}, 'Your power, if fitted; uses energy'), h('b', {}, 'Lock'), h('span', {}, 'Always face the rival, at lower speed'))
         : h('.keys', {}, h('b', {}, 'WASD / Arrows'), h('span', {}, 'Drive'), h('b', {}, 'Space or J'), h('span', {}, 'Main weapon: tap or hold, depending on the weapon'), h('b', {}, 'K, E or F'), h('span', {}, 'Top mount'), h('b', {}, 'L or R'), h('span', {}, 'Power (uses energy)'), h('b', {}, 'Q or Tab'), h('span', {}, 'Lock: always face the rival, at lower speed'), h('b', {}, 'C'), h('span', {}, 'Change camera: booth or chase'), h('b', {}, 'Esc or P'), h('span', {}, 'Pause'), h('b', {}, 'M'), h('span', {}, 'Mute')),
+      touch ? null : h('h3', {}, 'Controller'),
+      touch ? null : h('.keys', {}, h('b', {}, 'Stick or d-pad'), h('span', {}, 'Drive, and move around menus'), h('b', {}, 'A'), h('span', {}, 'Main weapon; confirm in menus'), h('b', {}, 'X'), h('span', {}, 'Top mount'), h('b', {}, 'B'), h('span', {}, 'Power; back in menus'), h('b', {}, 'LB'), h('span', {}, 'Lock on'), h('b', {}, 'Y'), h('span', {}, 'Change camera'), h('b', {}, 'Start'), h('span', {}, 'Pause')),
       h('h3', {}, 'Winning'),
       h('ul', {}, h('li', {}, 'Empty their health, push them off the arena, or out-damage them by the horn.'), h('li', {}, 'Hits to the rear do 25% more; to the side, 10% more.'), h('li', {}, 'A red wedge on the floor means a big swing is coming: get out of it.')),
       h('h3', {}, 'Salvage rights'),
@@ -168,6 +171,8 @@ export const UI = {
       render(cur);
       return e;
     };
+    const fsRow = window.desktop ? h('.setrow', {}, h('span', {}, 'Full screen')) : null;
+    if (fsRow) window.desktop.isFullscreen().then((on) => fsRow.append(seg([[true, 'On'], [false, 'Off']], !!on, (v) => window.desktop.setFullscreen(v))));
     const offlineText = this.offline === null ? 'Available once published' : this.offline >= 100 ? 'Offline ready' : `Saving for offline: ${Math.round(this.offline)}%`;
     this.modal(
       h('h2', {}, 'Settings'),
@@ -176,14 +181,14 @@ export const UI = {
       h('.setrow', {}, h('span', {}, 'Driver assist'), seg([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], st.assist, (v) => { st.assist = v; Save.write(); })),
       h('.setrow', {}, h('span', {}, 'Camera'), seg([['booth', 'Booth'], ['chase', 'Chase']], st.cam, (v) => { setCamera(v); })),
       navigator.vibrate ? h('.setrow', {}, h('span', {}, 'Vibration'), seg([[true, 'On'], [false, 'Off']], st.vibrate !== false, (v) => { st.vibrate = v; Save.write(); })) : null,
-      h('.setrow', {}, h('span', {}, 'Offline play'), h('span.note', {}, offlineText)),
+      window.desktop ? null : h('.setrow', {}, h('span', {}, 'Offline play'), h('span.note', {}, offlineText)),
+      fsRow,
       h('.row', {}, btn('Close', () => this.closeModal(), 'primary'), btn('Reset save', () => this.confirm('Reset your save?', 'This wipes your garage and ladder position for good.', 'Reset', () => { Save.reset(); Flow.title(); }))));
   },
   credits() {
     this.modal(
       h('h2', {}, 'Credits'),
       h('p', {}, 'An idea by Rich Conlan.'),
-      h('p', {}, 'Music and sound effects created with ElevenLabs.'),
       h('p', {}, 'Fonts: Teko and Rajdhani, SIL Open Font License. Built on three.js, MIT License.'),
       h('.row', {}, btn('Close', () => this.closeModal(), 'primary')));
   },
@@ -625,7 +630,8 @@ export const UI = {
         btn('Back to garage', () => { this.closeModal(); Flow.quitToGarage(); }),
         btn(Audio.mutedAll ? 'Unmute' : 'Mute', () => { toggleMute(); this.pause(); }),
         btn(`Camera: ${G.camMode}`, () => { setCamera(); this.pause(); }),
-        btn('How to play', () => this.howto(() => this.pause()))));
+        btn('How to play', () => this.howto(() => this.pause())),
+        window.desktop ? btn('Quit to desktop', () => window.desktop.quit()) : null));
   },
   lost(n, r) {
     const riv = RIVALS[n - 1];
