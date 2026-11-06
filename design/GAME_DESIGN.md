@@ -688,3 +688,46 @@ Upgrading ram and drill to full, if the test says so, comes out of the margin ($
 - **Salvage survives a reload:** the offer, picks and payout are saved until you continue.
 - **Test note:** serve tests with `tools/serve.py` (caching off). The plain server let the browser test stale code, which looked like the sim differing between Node and Chrome. With caching off, 17 of 18 replays match Node exactly; fight 14 differs by about one hit near the end, cause unknown. It has been won in the browser during a full playthrough.
 - **Text scanner:** it reports items scrolled inside a list (`.tabbody`, `.cards`) as clipped. Those lists really scroll; checked by eye in screenshots at each size.
+
+## Change: Versus, two players on one keyboard
+
+**Pitch:** a couch fight with no career at stake. Two people, one keyboard, pick a robot and an arena, and settle it. Separate from the career: it never reads or changes the save except to offer your garage robot.
+
+**Where:** a **Versus** button on the title screen. Hidden on touch-only devices, which have no keyboard.
+
+**Keys:** chosen so four hands fit on one keyboard and rows don't collide.
+
+| Action | Player 1 | Player 2 |
+|---|---|---|
+| Drive | W A S D | Arrow keys |
+| Main weapon | F | K |
+| Top mount | G | L |
+| Power | H | ; |
+| Lock on | R | I |
+| Pause | Esc | Esc |
+
+Screen-relative driving, booth camera only (chase cam follows one robot, so it's off). Both players get aim assist. Many keyboards can't register every key combination at once; the design note on the select screen says so and the layout separates the players' hands to limit it.
+
+**Select screen:** each player cycles robots with their own left and right keys, and readies with their weapon key; the same is clickable. Choices: 8 ready-made robots from the ladder's rivals in their own paint, plus "Your robot" (the garage build). Mirror picks are allowed: Player 2's copy is painted black and red. Either player cycles the arena with W/S or Up/Down, or Random. Both ready: pre-fight, then 3-2-1.
+
+**Fairness:** all robots get the same health budget regardless of chassis (armor still counts), and a test (`tools/versus.mjs`) plays every pairing with bots and reports win rates; no ready-made robot should fall outside 30-70% overall. No Driver Assist, no rival multipliers. Timer 2:00, sudden hazards as usual. "Your robot" is unbalanced on purpose: you earned it.
+
+**Result:** announcer calls the winner, a running score for the session (first-to-whatever), then Rematch, Change robots, Title. No prizes, no salvage, no save changes.
+
+**HUD:** both names with P1/P2, both weapon and energy gauges. Link-lost static is off, because it would blind both players; the stun still applies and the sound plays.
+
+**Assets:** 2 announcer lines, "Player one wins!" and "Player two wins!", same voice as the others. Everything else reuses what exists.
+
+**Not included:** phones, online play, a second controller.
+
+**Definition of done additions:** both players control only their own robot with real key presses at once; result, rematch, change robots and title all work; pausing and retrying work; the career save is byte-for-byte unchanged by a Versus match; every screen passes the scan at 1280x720 and 800x600; all 18 career replays still win.
+
+### Versus: changes after review (these win over the section above)
+
+- **Keys:** Player 2 is arrows with `,` `.` `/` for weapon, top and power, and L for lock. Player 1's R is lock. Versus has its own key map: only the table's keys, Esc and M are live. Hold weapons and the autocannon toggle with a tap, as on touch.
+- **Endings:** at the horn, the higher health percentage wins. A dead-level finish or a double KO is a draw with no score. No sudden death: a draw is simple and clear.
+- **Stalling:** in Versus the stalemate drain hits only whoever's ahead on health, so a leader can't run out the clock.
+- **Select:** the weapon key toggles ready; your own robot locks while ready. Changing arena clears both readies. Esc goes back. Cards list each part, its key, and tap on/off. A live strip lights keys as they're pressed.
+- **Telling robots apart:** Player 1 yellow, Player 2 cyan (rings, tags over each robot, HUD, arrows). "LINK LOST" shows in that player's own HUD; the full-screen static stays off.
+- **Roster:** Slagheap, Sideslip, Mabel's Mallet, Hotfoot, Forgemaster, Permafrost, Lady Faraday, The Foreman, one of each main weapon, flattened to Mk II, equal base health, with Versus-only multipliers in `game/src/versus.js`. Slagheap gets spike wheels. "Your robot" keeps its real parts and chips and is tagged not balanced.
+- **Career separation:** `G.mode` keeps Versus out of `recordWin`, `pending`, `fightSeed`, `seen` and settings. Mute and camera don't write the save during a match. The sim defaults keep career behavior: `versus` off, aim assist for robot 0 only.

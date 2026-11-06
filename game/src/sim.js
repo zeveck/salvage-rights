@@ -56,7 +56,9 @@ function makeRobot(idx, spec, x, z, heading) {
 }
 
 export class Fight {
-  constructor({ player, rival, arena, seed = 1, assist = 'normal', timer = 120, boss = false, hazardLeague = 1 }) {
+  constructor({ player, rival, arena, seed = 1, assist = 'normal', timer = 120, boss = false, hazardLeague = 1, versus = false, aimAssist = [true, false] }) {
+    this.versus = versus;
+    this.aimAssist = aimAssist;
     this.seed = seed >>> 0;
     this.rng = new Rng(seed);
     this.arenaId = arena;
@@ -237,7 +239,7 @@ export class Fight {
     } else if (mag > 0.05) {
       let target = Math.atan2(inp.mx, inp.mz);
       // Aim assist for the player: steer roughly at the rival and the robot lines up.
-      if (r.idx === 0) {
+      if (this.aimAssist[r.idx]) {
         const off = angleDiff(target, toFoeH);
         const dist = hyp(foe.x - r.x, foe.z - r.z);
         if (Math.abs(off) < 0.6 && dist < 9) target = toFoeH;
@@ -1021,7 +1023,13 @@ export class Fight {
     this.noDamageT += DT;
     if (this.noDamageT > 20 && !this.stalemateWarned) { this.stalemateWarned = true; this.emit({ type: 'stalemate' }); }
     if (this.noDamageT > 25) {
-      for (const r of this.robots) { r.hp -= 6 * DT; r.taken += 0; }
+      if (this.versus) {
+        // Whoever's ahead can't just run out the clock: the leader drains.
+        const [a, b] = this.robots;
+        const fa = a.hp / a.stats.maxHp, fb = b.hp / b.stats.maxHp;
+        if (fa >= fb) a.hp -= 6 * DT;
+        if (fb >= fa) b.hp -= 6 * DT;
+      } else for (const r of this.robots) { r.hp -= 6 * DT; r.taken += 0; }
     }
   }
 
@@ -1029,6 +1037,7 @@ export class Fight {
     if (this.over) return;
     const [a, b] = this.robots;
     if (a.hp <= 0 || b.hp <= 0) {
+      if (a.hp <= 0 && b.hp <= 0 && this.versus) { this.finish(-1, 'draw'); return; }
       if (a.hp <= 0 && b.hp <= 0) { this.finish(a.dealt >= b.dealt ? 0 : 1, 'ko'); return; }
       const loser = a.hp <= 0 ? a : b;
       const cause = loser.lastHazard ? 'hazard' : 'ko';
@@ -1036,6 +1045,13 @@ export class Fight {
       return;
     }
     if (this.t >= this.timer) {
+      if (this.versus) {
+        // Decided by what the HUD shows: health left. Dead level is a draw.
+        const fa = a.hp / a.stats.maxHp, fb = b.hp / b.stats.maxHp;
+        if (Math.abs(fa - fb) < 0.005) this.finish(-1, 'draw');
+        else this.finish(fa > fb ? 0 : 1, 'decision');
+        return;
+      }
       this.finish(a.dealt >= b.dealt ? 0 : 1, 'decision');
     }
   }

@@ -14,6 +14,7 @@ import { ArenaView, loadTex } from './arena.js';
 import { Fx } from './fx.js';
 import { UI } from './ui.js';
 import { CANONICAL, parseBuild } from './canonical.js';
+import { setupVersus, rosterBuild, VS_ARENAS } from './versus.js';
 
 const canvas = document.getElementById('view');
 const isPhone = matchMedia('(pointer: coarse)').matches;
@@ -53,7 +54,7 @@ function envFor(color, ambient) {
 export const G = {
   state: 'boot', scene: null, fight: null, driver: null, views: [], arena: null, fx: null, rivalN: 1, exhibition: false,
   camMode: 'booth', frozen: false, paused: false, accum: 0, hitStop: 0, timeScale: 1, koT: 0, shake: 0, punch: 0, camTarget: new THREE.Vector3(), camDist: 16, chaseH: 0,
-  show: null, time: 0, prompts: null, fightStartT: 0, offer: null, picks: [], lastResult: null, stepping: false,
+  mode: 'career', vs: null, show: null, time: 0, prompts: null, fightStartT: 0, offer: null, picks: [], lastResult: null, stepping: false,
 };
 window.__G = G;
 
@@ -241,6 +242,9 @@ addEventListener('pointerup', () => { dragX = null; });
 export const Flow = {
   async title() {
     G.state = 'title';
+    G.mode = 'career';
+    Input.endVersus();
+    Input.active = false;
     clearTimeout(G.victoryTimer);
     Audio.stopLoops();
     UI.clear();
@@ -262,6 +266,8 @@ export const Flow = {
   },
   async garage(tab) {
     G.state = 'garage';
+    G.mode = 'career';
+    Input.endVersus();
     clearTimeout(G.victoryTimer);
     Audio.stopLoops();
     UI.clear();
@@ -279,7 +285,47 @@ export const Flow = {
     if (ticket !== G.rebuildTicket || G.show !== show) { v.dispose(); return; }
     show.setRobot(v);
   },
+  // Versus: pick robots and an arena.
+  async versus() {
+    G.mode = 'versus';
+    Input.startVersus([{ fire: false, top: false }, { fire: false, top: false }]);
+    Input.active = false;
+    G.paused = false; Input.paused = false;
+    G.state = 'versus';
+    Audio.stopLoops();
+    UI.clear();
+    if (!G.show) await enterShow('title', () => myRobot());
+    Audio.music('garage');
+    Audio.setFilter(false);
+    UI.versusSelect(G.vs);
+  },
+  async startVersus(cfg) {
+    G.mode = 'versus';
+    G.state = 'loading';
+    G.paused = false; Input.paused = false;
+    UI.clear();
+    UI.loading('Rolling out the robots');
+    Audio.stopLoops();
+    const garageBuild = currentBuild();
+    const arena = cfg.arena === 'random' ? VS_ARENAS[Math.floor(Math.random() * VS_ARENAS.length)] : cfg.arena;
+    cfg.playing = arena;
+    const fight = setupVersus({ a: cfg.a, b: cfg.b, arena, seed: Math.floor(Math.random() * 2147483647) + 1, garageBuild, garageName: Save.data.name });
+    const paintFor = (c) => (c === 'garage' ? Save.data.paint : RIVALS[c - 1].paint);
+    // The same robot twice: Player 2's copy is black and red.
+    const paintB = cfg.a === cfg.b ? { c1: '#0c0c10', c2: '#d81e2c', pattern: 'solid', finish: 'gloss' } : paintFor(cfg.b);
+    await stageFight({ fight, driver: null, arenaId: arena, buildA: fight.robots[0].build, paintA: paintFor(cfg.a), trophiesA: cfg.a === 'garage' ? Save.data.trophies : null, paintB, trophiesB: cfg.b === 'garage' ? Save.data.trophies : null, bossRail: false, tutorial: false, camMode: 'booth', colorB: 0x35e8ff });
+    const holdsFor = (r) => ({ fire: !!(r.build.main && PARTS[r.build.main.id].use === 'hold'), top: !!(r.build.top && PARTS[r.build.top.id].hold) });
+    Input.startVersus(fight.robots.map(holdsFor));
+    G.state = 'prefight';
+    G.vs = cfg;
+    Audio.music('battle-b');
+    Audio.setFilter(true);
+    UI.clear();
+    UI.versusPrefight(cfg);
+  },
   async startFight(n, exhibition = false, o = {}) {
+    G.mode = 'career';
+    Input.endVersus();
     G.state = 'loading';
     UI.clear();
     UI.loading(`Loading ${RIVALS[n - 1].name}`);
@@ -303,8 +349,8 @@ export const Flow = {
     UI.clear();
     UI.hud();
     Audio.setFilter(false);
-    const lg = LEAGUES[RIVALS[G.rivalN - 1].league - 1];
-    Audio.music(battleTrack(lg.id));
+    if (G.mode === 'versus') Audio.music('battle-b');
+    else Audio.music(battleTrack(LEAGUES[RIVALS[G.rivalN - 1].league - 1].id));
     Audio.loop('crowd', 'crowd', 0.28);
     G.state = 'countdown';
     G.countT = G.tutorial ? 1.0 : 2.6;
@@ -338,6 +384,7 @@ export const Flow = {
   retry() {
     G.paused = false;
     Input.paused = false;
+    if (G.mode === 'versus') { Input.active = false; Flow.startVersus(G.vs); return; }
     Audio.setDuck(1);
     Input.active = false;
     Flow.startFight(G.rivalN, G.exhibition);
@@ -345,6 +392,7 @@ export const Flow = {
   quitToGarage() {
     G.paused = false;
     Input.paused = false;
+    if (G.mode === 'versus') { Input.active = false; Flow.versus(); return; }
     Audio.setDuck(1);
     Input.active = false;
     Flow.garage();
@@ -435,7 +483,7 @@ Flow.resume_ = function resumeCareer() {
 };
 
 // A failed download never leaves a dead screen.
-for (const name of ['title', 'garage', 'startFight', 'afterWin', 'victory', 'resume_']) {
+for (const name of ['title', 'garage', 'startFight', 'afterWin', 'victory', 'resume_', 'versus', 'startVersus']) {
   const fn = Flow[name];
   Flow[name] = async function guarded(...args) {
     try { return await fn.apply(Flow, args); } catch (e) {
@@ -468,7 +516,12 @@ async function buildFightScene(n, exhibition, o) {
   Save.data.fightSeed = (Save.data.fightSeed * 31 + 7) >>> 0;
   const seed = o.seed || (Save.data.fightSeed ^ (n * 2654435761)) >>> 0;
   const { fight, driver } = setupFight({ n, playerBuild: build, playerName: Save.data.name, seed, assist: Save.data.settings.assist, ringerBuild: Save.data.ringer, ng: Save.data.ng });
-  const arenaId = lg.arena;
+  const paintR = riv.mirror ? { ...Save.data.paint, c1: '#0c0c10', c2: '#d81e2c', finish: 'gloss' } : riv.paint;
+  G.rivalN = n; G.exhibition = exhibition;
+  await stageFight({ fight, driver, arenaId: lg.arena, buildA: build, paintA: Save.data.paint, trophiesA: Save.data.trophies, paintB: paintR, trophiesB: null, bossRail: riv.boss, tutorial: !!o.tutorial, camMode: Save.data.settings.cam || 'booth', colorB: 0xff3b30 });
+}
+
+async function stageFight({ fight, driver, arenaId, buildA, paintA, trophiesA, paintB, trophiesB, bossRail, tutorial, camMode, colorB }) {
   const scene = new THREE.Scene();
   const a = fight.arena;
   scene.environment = envFor(a.color, a.ambient);
@@ -485,18 +538,17 @@ async function buildFightScene(n, exhibition, o) {
   rim.position.set(-6, 5, -10);
   scene.add(rim);
   const arena = new ArenaView(arenaId);
-  const paintR = riv.mirror ? { ...Save.data.paint, c1: '#0c0c10', c2: '#d81e2c', finish: 'gloss' } : riv.paint;
   const rb = fight.robots[1].build;
   const [viewA, viewB] = await Promise.all([
-    makeRobot(build, Save.data.paint, { trophies: Save.data.trophies, shadows: !isPhone }),
-    makeRobot(rb, paintR, { bossRail: riv.boss, shadows: !isPhone }),
-    riv.boss ? preload(['thruster', 'rail']) : null,
+    makeRobot(buildA, paintA, { trophies: trophiesA, shadows: !isPhone }),
+    makeRobot(rb, paintB, { bossRail, trophies: trophiesB, shadows: !isPhone }),
+    bossRail ? preload(['thruster', 'rail']) : null,
   ]);
   await arena.build(fight);
   disposeFight();
   if (G.show) { G.show.dispose(); G.show = null; }
-  G.fight = fight; G.driver = driver; G.arena = arena; G.rivalN = n; G.exhibition = exhibition;
-  G.tutorial = !!o.tutorial;
+  G.fight = fight; G.driver = driver; G.arena = arena;
+  G.tutorial = !!tutorial;
   G.lastEvents = [];
   G.views = [viewA, viewB];
   scene.add(arena.group, viewA.root, viewB.root);
@@ -504,12 +556,12 @@ async function buildFightScene(n, exhibition, o) {
   G.fx = new Fx(scene, isPhone);
   G.fx.setViewport(renderer.domElement.height, camera.fov);
   G.timeScale = 1; G.koT = 0; G.hitStop = 0; G.shake = 0; G.punch = 0; G.accum = 0; G.paused = false;
-  G.camMode = Save.data.settings.cam || 'booth';
+  G.camMode = camMode;
   G.chaseH = Math.PI / 2;
   G.broke = [{ 66: false, 33: false }, { 66: false, 33: false }];
   G.promptStep = 0; G.promptT = 0; G.slowHit = false; G.movedDist = 0;
   addAids(viewA, 0xffc21a, fight.robots[0]);
-  addAids(viewB, 0xff3b30, fight.robots[1]);
+  addAids(viewB, colorB, fight.robots[1]);
   viewA.update(0, fight.robots[0]); viewB.update(0, fight.robots[1]);
   G.camTarget.set(0, 0, 0);
   G.camDist = 24;
@@ -611,6 +663,12 @@ function toWorld(x, y) {
 function simTick() {
   const f = G.fight;
   if (f.over) return;
+  if (G.mode === 'versus') {
+    f.step([Input.consumeVersus(0), Input.consumeVersus(1)]);
+    for (const e of f.events) onEvent(e);
+    f.events.length = 0;
+    return;
+  }
   const inp = Input.consume(toWorld);
   const ai = G.driver.update();
   if (G.autopilot) G.autopilot.feed(inp);
@@ -650,7 +708,7 @@ function updateFight(dt) {
   if (G.camMode === 'chase' && G.state !== 'ko') updateChaseCam(dt); else updateBoothCam(dt);
   UI.updateHud(f, G);
   if (G.tutorial) tutorialPrompts(dt);
-  else if (G.state === 'fight') fightPrompts(dt);
+  else if (G.state === 'fight' && G.mode !== 'versus') fightPrompts(dt);
   driveAudio(f);
   if (G.state === 'ko') {
     G.koT -= dt;
@@ -729,17 +787,17 @@ function driveAudio(f) {
       let vol = 0, rate = 1;
       if (m === 'drum') { vol = r.rpm * 0.5; rate = 0.5 + r.rpm * 0.8; }
       else vol = r.firing ? 0.5 : 0;
-      Audio.loop(keyW, lp, r.idx === 0 ? vol : vol * 0.7, rate);
+      Audio.loop(keyW, lp, r.idx === 0 || G.mode === 'versus' ? vol : vol * 0.7, rate);
     }
     const dr = r.build.drive.id;
     const sp = r.speedNow / (r.stats.speed || 1);
     const key = 'd' + r.idx;
-    if (dr === 'treads') Audio.loop(key, 'tread', sp * 0.3 * (r.idx ? 0.5 : 1), 0.7 + sp * 0.5);
-    else if (dr === 'hover') Audio.loop(key, 'hover', (0.12 + sp * 0.18) * (r.idx ? 0.5 : 1), 0.8 + sp * 0.5);
+    if (dr === 'treads') Audio.loop(key, 'tread', sp * 0.3 * (r.idx && G.mode !== 'versus' ? 0.5 : 1), 0.7 + sp * 0.5);
+    else if (dr === 'hover') Audio.loop(key, 'hover', (0.12 + sp * 0.18) * (r.idx && G.mode !== 'versus' ? 0.5 : 1), 0.8 + sp * 0.5);
     else if (dr === 'legs') {
       const ph = Math.floor(G.views[r.idx].legPhase / Math.PI || 0);
-      if (ph !== G.views[r.idx].lastStomp && sp > 0.15) { G.views[r.idx].lastStomp = ph; Audio.play('stomp', { vol: 0.2 * (r.idx ? 0.5 : 1), vary: 0.15 }); }
-    } else Audio.loop(key, 'motor', sp * 0.22 * (r.idx ? 0.5 : 1), 0.6 + sp * 0.8);
+      if (ph !== G.views[r.idx].lastStomp && sp > 0.15) { G.views[r.idx].lastStomp = ph; Audio.play('stomp', { vol: 0.2 * (r.idx && G.mode !== 'versus' ? 0.5 : 1), vary: 0.15 }); }
+    } else Audio.loop(key, 'motor', sp * 0.22 * (r.idx && G.mode !== 'versus' ? 0.5 : 1), 0.6 + sp * 0.8);
     if (r.repairT > 0) Audio.loop('rep' + r.idx, 'repair', 0.3); else Audio.loop('rep' + r.idx, 'repair', 0);
   }
   if (f.hz.lava) {
@@ -883,7 +941,7 @@ function onEvent(e) {
       else Audio.play(size > 0.6 ? 'clang-l' : size > 0.25 ? 'clang-m' : 'clang-s', { vol: 0.8, vary: 0.15 });
       impactFeel(size * (e.big ? 1 : 0.7));
       if (e.amount >= 22) Audio.play('crowd-roar', { vol: 0.28, vary: 0.1 });
-      if (e.backstab && e.by === 0) { UI.callout('BACKSTAB'); Audio.voice('backstab', 0.85); }
+      if (e.backstab && (e.by === 0 || G.mode === 'versus')) { UI.callout(G.mode === 'versus' ? `P${e.by + 1} BACKSTAB` : 'BACKSTAB'); Audio.voice('backstab', 0.85); }
       if (G.tutorial && e.by === 0 && e.amount < 13 && e.kind === 'ram') G.slowHit = true;
       break;
     }
@@ -905,13 +963,13 @@ function onEvent(e) {
     case 'windup': if (v) G.fx.dangerArc(v.root, e.range, e.arc, e.t); break;
     case 'swing': Audio.play(e.kind === 'flipper' ? 'flipper' : 'swing', { vol: 0.5, rate: 1.4, vary: 0.1 }); break;
     case 'launch': Audio.play('jets', { vol: 0.4 }); Audio.play('crowd-roar', { vol: 0.4 }); break;
-    case 'flipped': fx.sparks(e.x, 0.3, e.z, 18, 5); Audio.play('clang-l', { vol: 0.7 }); UI.callout(e.r === 0 ? 'FLIPPED' : 'ON ITS BACK'); break;
+    case 'flipped': fx.sparks(e.x, 0.3, e.z, 18, 5); Audio.play('clang-l', { vol: 0.7 }); UI.callout(G.mode === 'versus' ? `P${e.r + 1} FLIPPED` : e.r === 0 ? 'FLIPPED' : 'ON ITS BACK'); break;
     case 'selfright': Audio.play('ratchet', { vol: 0.5 }); break;
     case 'land': if (e.big) { fx.dust(e.x, e.z); fx.dust(e.x + 0.3, e.z + 0.2); Audio.play('stomp', { vol: 0.5 }); } break;
-    case 'stun': if (e.r === 0) Audio.tone(320, 0.2, 'sawtooth', 0.07, 140); break;
-    case 'linklost': UI.linkLost(e.r === 0 ? e.t : 0); Audio.play('emp', { vol: 0.9 }); if (e.r === 0) Audio.staticBurst(e.t); break;
+    case 'stun': if (e.r === 0 || G.mode === 'versus') Audio.tone(320, 0.2, 'sawtooth', 0.07, 140); break;
+    case 'linklost': Audio.play('emp', { vol: 0.9 }); if (G.mode !== 'versus' && e.r === 0) { UI.linkLost(e.t); Audio.staticBurst(e.t); } break;
     case 'overheat': Audio.vent(); break;
-    case 'nopower': if (e.r === 0) Audio.denied(); break;
+    case 'nopower': if (e.r === 0 || G.mode === 'versus') Audio.denied(); break;
     case 'arc': {
       const a = v.anim.main;
       const sx = Math.sin(R.h), sz = Math.cos(R.h);
@@ -937,7 +995,7 @@ function onEvent(e) {
       if (e.hit) { fx.beam(ox, oy, oz, e.tx, e.ty + 0.6, e.tz, 0xffd27a, 0.025, 0.05); fx.sparks(e.tx, e.ty + 0.6, e.tz, 2, 3); }
       else fx.beam(ox, oy, oz, ox + sx * 8, oy - 0.5, oz + sz * 8, 0xffd27a, 0.02, 0.05);
       Audio.play('autocannon', { vol: 0.32, vary: 0.2 });
-      if (R.ammo === 0) { Audio.dry(); if (e.r === 0) UI.callout('AUTOCANNON DRY'); }
+      if (R.ammo === 0) { Audio.dry(); if (G.mode === 'versus') UI.callout(`P${e.r + 1} OUT OF AMMO`); else if (e.r === 0) UI.callout('AUTOCANNON DRY'); }
       break;
     }
     case 'rocket': Audio.play('rocket', { vol: 0.6, vary: 0.15 }); break;
@@ -952,7 +1010,7 @@ function onEvent(e) {
     }
     case 'wall': if (e.v > 4) { fx.sparks(e.x, 0.6, e.z, 5 + Math.floor(e.v), 5); Audio.play(e.hard ? 'clang-l' : 'clang-s', { vol: 0.45, vary: 0.2 }); } break;
     case 'bump': fx.sparks(e.x, 0.5, e.z, 6, 4); Audio.play('clang-s', { vol: Math.min(0.7, e.v * 0.1), vary: 0.2 }); break;
-    case 'teeter': Audio.play('saw', { vol: 0.35, rate: 0.5 }); UI.callout(e.r === 0 ? 'BACK UP!' : 'ON THE EDGE'); break;
+    case 'teeter': Audio.play('saw', { vol: 0.35, rate: 0.5 }); UI.callout(G.mode === 'versus' ? `P${e.r + 1} ON THE EDGE` : e.r === 0 ? 'BACK UP!' : 'ON THE EDGE'); break;
     case 'jet': if (e.state === 'fire') { /* looped */ } break;
     case 'piston':
       if (e.state === 'warn') Audio.tone(620, 0.12, 'square', 0.06);
@@ -963,7 +1021,7 @@ function onEvent(e) {
       if (e.state === 'live') Audio.play('electric', { vol: 0.55 });
       if (e.state === 'live' && G.arena.coilTop) for (const p of f.hz.pylons) fx.arc(G.arena.coilTop.x, G.arena.coilTop.y, G.arena.coilTop.z, p.x, 1.6, p.z, 0xc9a6ff, 8, 0.3);
       break;
-    case 'wind': if (e.state === 'warn') { UI.callout(e.dir > 0 ? 'WIND: TOWARD YOU' : 'WIND: AWAY'); Audio.tone(300, 0.3, 'sine', 0.06, 500); } break;
+    case 'wind': if (e.state === 'warn') { UI.callout(e.dir > 0 ? 'WIND: TOWARD THE NEAR EDGE' : 'WIND: TOWARD THE FAR EDGE'); Audio.tone(300, 0.3, 'sine', 0.06, 500); } break;
     case 'swinghammer': if (e.state === 'swing') { Audio.play('swing', { vol: 0.9, rate: 0.7 }); } if (e.state === 'warn') fx.floorRing(0, 0, 2, 0xff3b30, 1); break;
     case 'pit': Audio.play('pit', { vol: e.state === 'warn' ? 0.9 : 0.5 }); if (e.state === 'warn') UI.callout('THE PIT IS OPENING'); break;
     case 'phase2': {
@@ -989,13 +1047,15 @@ function onFightOver() {
   G.state = 'ko';
   G.lastResult = f.result;
   const r = f.result;
-  const loser = f.robots[1 - r.winner];
+  const loser = r.winner === -1 ? null : f.robots[1 - r.winner];
   G.koT = 2.6;
   Input.active = false;
   Input.clear();
   Audio.play('horn', { vol: 0.7 });
   Audio.stopLoops();
-  if (r.cause === 'ko' || r.cause === 'hazard' || r.cause === 'immobile') {
+  if (r.cause === 'draw') {
+    Audio.voice('draw');
+  } else if (r.cause === 'ko' || r.cause === 'hazard' || r.cause === 'immobile') {
     if (r.cause !== 'immobile') {
       const chunks = G.views[loser.idx].explode(G.scene);
       loser.exploded = true;
@@ -1012,7 +1072,7 @@ function onFightOver() {
     Audio.voice(r.cause === 'pit' ? 'hazard' : 'ringout');
   } else Audio.voice('judges');
   G.shake = 1;
-  const big = { ko: 'KNOCKOUT', hazard: 'HAZARD KO', ringout: 'RING OUT', pit: 'INTO THE PIT', decision: "TIME!", immobile: 'IMMOBILE' }[r.cause];
+  const big = { ko: 'KNOCKOUT', hazard: 'HAZARD KO', ringout: 'RING OUT', pit: 'INTO THE PIT', decision: "TIME!", immobile: 'IMMOBILE', draw: 'DRAW' }[r.cause];
   UI.bigText(big, 2.4, true);
   Audio.play('crowd-roar', { vol: 0.9 });
 }
@@ -1021,6 +1081,13 @@ function koDone() {
   const f = G.fight;
   const r = f.result;
   UI.clear();
+  if (G.mode === 'versus') {
+    if (r.winner >= 0) { G.vs.score[r.winner]++; Audio.voice(r.winner === 0 ? 'p1wins' : 'p2wins'); }
+    G.state = 'vsresult';
+    Audio.music('garage');
+    UI.versusResult(r, G.vs);
+    return;
+  }
   if (r.winner === 0) {
     const n = G.rivalN;
     if (r.taken[0] <= 0) Audio.voice('flawless');
@@ -1050,11 +1117,13 @@ addEventListener('visibilitychange', () => { if (document.hidden) { if (G.state 
 addEventListener('blur', () => { if ((G.state === 'fight' || G.state === 'countdown') && !G.stepping) Flow.pause(); });
 
 export function setCamera(mode) {
+  if (G.mode === 'versus') return;
   G.camMode = mode || (G.camMode === 'booth' ? 'chase' : 'booth');
   Save.data.settings.cam = G.camMode;
   Save.write();
 }
 export function toggleMute() {
+  if (G.mode === 'versus') { Audio.setMuted(!Audio.mutedAll); UI.onMuted(); return; }
   Save.data.settings.muted = !Save.data.settings.muted;
   Audio.setMuted(!!Save.data.settings.muted);
   Save.write();
@@ -1122,6 +1191,38 @@ window.__game = {
     for (const c of Object.keys(held)) setKey(c, false);
     if (G.scene && !G.noRender) renderer.render(G.scene, camera);
     return { state: G.state, result: f.result };
+  },
+  // Test driver for Versus: two bots, each sending that player's real key events.
+  autoVersus() {
+    const f = G.fight;
+    if (!f || G.mode !== 'versus') return 'no versus fight';
+    G.frozen = true; G.stepping = true;
+    const persona = { react: 300, aim: 12, aggr: 0.7, hazard: 0.2, seeWarned: true };
+    const bots = [new Driver(f, 0, persona, 77), new Driver(f, 1, persona, 88)];
+    const KEYS = [{ u: 'KeyW', d: 'KeyS', l: 'KeyA', r: 'KeyD', fire: 'KeyF', top: 'KeyG', pow: 'KeyH', lock: 'KeyR' }, { u: 'ArrowUp', d: 'ArrowDown', l: 'ArrowLeft', r: 'ArrowRight', fire: 'Comma', top: 'Period', pow: 'Slash', lock: 'KeyL' }];
+    const send = (type, code) => dispatchEvent(new KeyboardEvent(type, { code, bubbles: true }));
+    const held = {};
+    const setKey = (c, on) => { if (!!held[c] !== !!on) { held[c] = !!on; send(on ? 'keydown' : 'keyup', c); } };
+    const tap = (c) => { send('keydown', c); send('keyup', c); };
+    for (let i = 0; i < 60 * 300 && (G.state === 'countdown' || G.state === 'fight' || G.state === 'ko'); i++) {
+      G.time += DT;
+      if (G.state === 'fight' && !f.over) {
+        bots.forEach((b, n) => {
+          const a = b.update(), K = KEYS[n], v = Input.vs[n];
+          const q = Math.hypot(a.mx, a.mz) < 0.15 ? -1 : ((Math.round(Math.atan2(a.mx, -a.mz) / (Math.PI / 4)) % 8) + 8) % 8;
+          setKey(K.u, [7, 0, 1].includes(q)); setKey(K.r, [1, 2, 3].includes(q)); setKey(K.d, [3, 4, 5].includes(q)); setKey(K.l, [5, 6, 7].includes(q));
+          if (v.holdFire) { if (a.fire !== v.fireOn) tap(K.fire); } else if (a.firePressed) tap(K.fire);
+          if (v.holdTop) { if (a.top !== v.topOn) tap(K.top); } else if (a.topPressed) tap(K.top);
+          if (a.powerPressed) tap(K.pow);
+          if (a.lock !== v.lock) tap(K.lock);
+        });
+        simTick();
+      }
+      frame(DT);
+    }
+    for (const c of Object.keys(held)) setKey(c, false);
+    if (G.scene && !G.noRender) renderer.render(G.scene, camera);
+    return { state: G.state, result: f.result, hp: f.robots.map((r) => +r.hp.toFixed(1)), score: G.vs.score };
   },
   audioState: () => Audio.state(),
   simHash: () => (G.fight ? G.fight.hash() : 0),
@@ -1212,5 +1313,5 @@ async function bootInner() {
     navigator.serviceWorker.ready.then((reg) => { if (reg.active) reg.active.postMessage('fill'); }).catch(() => {});
   }
 }
-void Hardware; void STARTER_BUILD; void MODELS; void RobotView; void PARTS;
+void rosterBuild; void Hardware; void STARTER_BUILD; void MODELS; void RobotView; void PARTS;
 boot();

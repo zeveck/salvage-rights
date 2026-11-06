@@ -6,6 +6,7 @@
   out your parts/buffs. You can also sell/buy between things in the garage. There should be a variety of arenas. It should probably be a 3d game. You remote control during the fight. You can have cool
   weapons, powers, etc. You can also redesign/paint your robot. --budget 25 --3d --publish --no-confirm
 2. --package steam
+3. --change add a two-player mode on one keyboard --publish --no-confirm
 
 ## Settings
 - 3D: yes
@@ -56,3 +57,9 @@
 - Version 1.0.0, Windows and Linux, plus Steam files in dist/steam/ (dist/ is not committed). STEAM_APP_ID, STEAM_DEPOT_WINDOWS and STEAM_DEPOT_LINUX: not set yet.
 - Not run: Linux app (no GTK in the container), Windows app. Controller tested with a simulated pad. Desktop buttons tested in a browser with a stand-in bridge.
 - The online version doesn't have controller menus or the credit change until the next publish.
+
+## Change: two-player mode (done)
+- Versus built as a separate path; 3 announcer lines (under $0.05). Career fights identical: 18/18 by tools/career-unchanged.mjs. Career save byte-for-byte unchanged after matches.
+- Roster overall 48-51% with bots; individual pairings still lopsided. Not played by two people.
+- Full career run reached the Champion screen after the change; bot took Easy, and lost 12 straight at Updraft before winning.
+- The desktop and Steam builds in dist/ are version 1.0.0, from before this change: repackage to include Versus, as version 1.1.0.

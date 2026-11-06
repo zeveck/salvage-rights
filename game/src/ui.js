@@ -8,6 +8,7 @@ import { Audio } from './audio.js';
 import { Input } from './input.js';
 import { Flow, G, toggleMute, setCamera } from './main.js';
 import { PATTERNS } from './paint.js';
+import { VS_ROSTER, VS_ARENAS, rosterBuild } from './versus.js';
 
 const uiRoot = () => document.getElementById('ui');
 function h(tag, props = {}, ...kids) {
@@ -78,6 +79,7 @@ export const UI = {
   bigEl: null, promptEl: null, garageTab: 'build', hudRefs: null,
 
   clear() {
+    if (this.vsHandler) { for (const [t, f] of this.vsHandler) removeEventListener(t, f, true); this.vsHandler = null; }
     uiRoot().innerHTML = '';
     document.getElementById('hud').classList.add('hidden');
     document.getElementById('touch').classList.add('hidden');
@@ -85,6 +87,7 @@ export const UI = {
     document.getElementById('static').className = '';
     document.getElementById('static').textContent = '';
     for (const c of document.querySelectorAll('.callout,.big,#prompt,.arrow')) c.remove();
+    document.getElementById('hud').innerHTML = '';
     this.modalEl = null; this.hudRefs = null; this.promptEl = null;
   },
   add(e) { uiRoot().append(e); return e; },
@@ -123,6 +126,7 @@ export const UI = {
       h('.menu', {},
         has ? btn('Continue', () => Flow.resume_(), 'primary') : null,
         btn('New game', newGame, has ? '' : 'primary'),
+        isTouch() ? null : btn('Versus', () => Flow.versus()),
         btn('How to play', () => this.howto()),
         btn('Settings', () => this.settings()),
         btn('Credits', () => this.credits()),
@@ -428,71 +432,89 @@ export const UI = {
   },
 
   // ---- HUD and touch ---------------------------------------------------
+  hudPanel(r, name, withGauges, right) {
+    const b = r.build;
+    const refs = { bar: h('i'), under: h('u'), w: h('i'), energy: h('i'), top: h('span', {}, ''), status: h('span', {}, ''), show: 1, lastStatus: '' };
+    const gauges = withGauges ? h('.gauges', {},
+      h('.gauge', {}, h('span', {}, b.main ? PARTS[b.main.id].name : ''), h('.g', {}, refs.w)),
+      b.power ? h('.gauge', {}, 'Energy', h('.g', {}, refs.energy)) : null,
+      b.top ? h('.gauge', {}, refs.top) : null, refs.status) : null;
+    refs.el = h(`.hp${right ? '.right' : ''}`, {}, h('.nm', {}, name), h('.hpbar', {}, refs.under, refs.bar), gauges);
+    return refs;
+  },
   hud() {
     const f = G.fight;
+    const versus = G.mode === 'versus';
     const hud = document.getElementById('hud');
     hud.classList.remove('hidden');
-    const b = f.robots[0].build;
+    const [a, b] = f.robots;
     const r = {};
-    r.myBar = h('i'); r.myU = h('u'); r.foeBar = h('i'); r.foeU = h('u');
+    r.panels = [
+      this.hudPanel(a, versus ? `P1 ${a.name}` : Save.data.name, true, false),
+      this.hudPanel(b, versus ? `P2 ${b.name}` : b.name, versus, true),
+    ];
+    r.panels[0].el.classList.add('p1'); r.panels[1].el.classList.add(versus ? 'p2' : 'rival');
     r.timer = h('.timer', {}, '2:00');
     r.signal = h('.signal', {}, ...[4, 6, 8, 10, 11].map((v) => h('i', { style: { height: `${v}px` } })));
-    r.energy = h('i');
-    r.w = h('i');
-    r.wLabel = h('span', {}, b.main ? PARTS[b.main.id].name : '');
-    r.top = h('span', {}, '');
-    r.status = h('span', {}, '');
-    const hasEnergy = !!b.power;
     hud.innerHTML = '';
-    hud.append(h('.hudrow', {},
-      h('.hp', {}, h('.nm', {}, Save.data.name), h('.hpbar', {}, r.myU, r.myBar),
-        h('.gauges', {},
-          h('.gauge', {}, r.wLabel, h('.g', {}, r.w)),
-          hasEnergy ? h('.gauge', {}, 'Energy', h('.g', {}, r.energy)) : null,
-          b.top ? h('.gauge', {}, r.top) : null, r.status)),
-      h('div', {}, r.timer, r.signal),
-      h('.hp.right', {}, h('.nm', {}, f.robots[1].name), h('.hpbar', {}, r.foeU, r.foeBar))));
-    hud.append(h('.hud-btns', {}, iconBtn(SVG.camera, () => setCamera(), 'Change camera'), iconBtn(SVG.pause, () => Flow.pause(), 'Pause')));
+    hud.append(h('.hudrow', {}, r.panels[0].el, h('div', {}, r.timer, r.signal), r.panels[1].el));
+    hud.append(h('.hud-btns', {}, versus ? null : iconBtn(SVG.camera, () => setCamera(), 'Change camera'), iconBtn(SVG.pause, () => Flow.pause(), 'Pause')));
+    if (versus) {
+      r.tags = [h('.vstag.p1', {}, 'P1'), h('.vstag.p2', {}, 'P2')];
+      hud.append(r.tags[0], r.tags[1]);
+    }
     this.hudRefs = r;
-    r.myShow = 1; r.foeShow = 1;
-    this.setupTouch(b);
+    this.setupTouch(a.build);
+  },
+  updatePanel(p, x, withGauges) {
+    const hf = Math.max(0, x.hp / x.stats.maxHp);
+    p.bar.style.width = `${hf * 100}%`;
+    p.show = Math.max(hf, p.show - 0.012);
+    p.under.style.width = `${p.show * 100}%`;
+    if (!withGauges) return;
+    const m = x.build.main && x.build.main.id;
+    let w = 1, hot = false;
+    if (m === 'drum') w = x.rpm;
+    else if (m === 'flame') { w = x.lockout > 0 ? 1 : x.heat; hot = true; }
+    else if (m === 'saw' || m === 'drill') w = x.extend;
+    else if (m) { const cd = PARTS[m].cooldown || 1; w = 1 - x.wCd / (cd * x.stats.cooldownMult); }
+    p.w.style.width = `${Math.max(0, Math.min(1, w)) * 100}%`;
+    p.w.className = hot ? 'hot' : '';
+    p.energy.style.width = `${x.energy}%`;
+    if (x.build.top) p.top.textContent = `${PARTS[x.build.top.id].name} ${x.ammo}`;
+    let status = '';
+    if (x.immobileIn < 5) status = `Move! ${Math.max(0, Math.ceil(x.immobileIn))}`;
+    else if (G.mode === 'versus' && x.stun > 0) status = 'LINK LOST';
+    else if (x.lock) status = 'Lock on';
+    if (p.lastStatus !== status) { p.status.textContent = status; p.lastStatus = status; if (status.startsWith('Move')) Audio.tick(); }
   },
   updateHud(f, g) {
     const r = this.hudRefs;
     if (!r) return;
     const [a, b] = f.robots;
-    const af = Math.max(0, a.hp / a.stats.maxHp), bf = Math.max(0, b.hp / b.stats.maxHp);
-    r.myBar.style.width = `${af * 100}%`; r.foeBar.style.width = `${bf * 100}%`;
-    r.myShow = Math.max(af, r.myShow - 0.012); r.foeShow = Math.max(bf, r.foeShow - 0.012);
-    r.myU.style.width = `${r.myShow * 100}%`; r.foeU.style.width = `${r.foeShow * 100}%`;
+    const versus = G.mode === 'versus';
+    this.updatePanel(r.panels[0], a, true);
+    this.updatePanel(r.panels[1], b, versus);
     const rem = Math.max(0, Math.ceil(f.timer - f.t));
     const txt = `${Math.floor(rem / 60)}:${String(rem % 60).padStart(2, '0')}`;
     if (r.timer.textContent !== txt) { r.timer.textContent = txt; r.timer.classList.toggle('low', rem <= 10); if (rem <= 5 && rem > 0) Audio.tick(); }
-    // Weapon state.
-    const m = a.build.main && a.build.main.id;
-    let w = 1, hot = false;
-    if (m === 'drum') w = a.rpm;
-    else if (m === 'flame') { w = a.lockout > 0 ? 1 : a.heat; hot = true; }
-    else if (m === 'saw' || m === 'drill') w = a.extend;
-    else if (m) { const cd = PARTS[m].cooldown || 1; w = 1 - a.wCd / (cd * a.stats.cooldownMult); }
-    r.w.style.width = `${Math.max(0, Math.min(1, w)) * 100}%`;
-    r.w.className = hot ? 'hot' : '';
-    r.energy.style.width = `${a.energy}%`;
-    if (a.build.top) r.top.textContent = `${PARTS[a.build.top.id].name} ${a.ammo}`;
-    let status = '';
-    if (a.immobileIn < 5) status = `Move! ${Math.max(0, Math.ceil(a.immobileIn))}`;
-    else if (a.lock) status = 'Lock on';
-    if (r.lastStatus !== status) { r.status.textContent = status; r.lastStatus = status; if (status.startsWith('Move')) Audio.tick(); }
-    // Off-screen rival.
-    this.offscreenArrow(b, g);
+    if (versus) {
+      f.robots.forEach((x, i) => {
+        const v = this.project(x.x, x.y + 2.1, x.z);
+        if (v) { r.tags[i].style.transform = `translate(${v.x}px, ${v.y}px) translate(-50%, -100%)`; }
+      });
+      this.offscreenArrow(a, g, 0, '#ffc21a');
+      this.offscreenArrow(b, g, 1, '#35e8ff');
+    } else this.offscreenArrow(b, g);
     this.updateTouch(a);
   },
-  offscreenArrow(r, g) {
-    let ar = this.arrowEl;
+  offscreenArrow(r, g, idx = 1, color = null) {
+    this.arrows = this.arrows || [];
+    let ar = this.arrows[idx];
     const v = this.project(r.x, 0.5, r.z);
     const off = !v || v.x < 0 || v.x > innerWidth || v.y < 40 || v.y > innerHeight;
     if (!off || g.state !== 'fight') { if (ar) ar.style.display = 'none'; return; }
-    if (!ar || !ar.isConnected) { ar = this.arrowEl = h('.arrow'); document.body.append(ar); }
+    if (!ar || !ar.isConnected) { ar = this.arrows[idx] = h('.arrow'); if (color) ar.style.borderBottomColor = color; document.body.append(ar); }
     ar.style.display = 'block';
     const cx = innerWidth / 2, cy = innerHeight / 2;
     const dx = v.x - cx, dy = v.y - cy;
@@ -620,8 +642,126 @@ export const UI = {
     this.staticT = setTimeout(() => { s.classList.remove('on'); s.textContent = ''; }, t * 1000);
   },
 
+  // ---- versus ------------------------------------------------------------
+  vsListen(handlers) {
+    this.vsHandler = Object.entries(handlers);
+    for (const [t, f] of this.vsHandler) addEventListener(t, f, true);
+  },
+  versusSelect(prev) {
+    const choices = [...VS_ROSTER];
+    if (Save.exists()) choices.push('garage');
+    const arenas = [...VS_ARENAS, 'random'];
+    const start = (c, fb) => { const i = choices.indexOf(c); return i >= 0 ? i : fb; };
+    const st = {
+      pick: [start(prev && prev.a, 0), start(prev && prev.b, 4)],
+      arena: prev ? Math.max(0, arenas.indexOf(prev.arena)) : arenas.length - 1,
+      ready: [false, false],
+      score: prev ? prev.score : [0, 0],
+      held: new Set(),
+    };
+    const KEYS = [
+      { name: 'Player 1', left: 'KeyA', right: 'KeyD', ready: 'KeyF', strip: [['KeyW', 'W'], ['KeyA', 'A'], ['KeyS', 'S'], ['KeyD', 'D'], ['KeyF', 'F'], ['KeyG', 'G'], ['KeyH', 'H'], ['KeyR', 'R']], main: 'F', top: 'G', power: 'H', lock: 'R', drive: 'W A S D' },
+      { name: 'Player 2', left: 'ArrowLeft', right: 'ArrowRight', ready: 'Comma', strip: [['ArrowUp', 'Up'], ['ArrowLeft', 'Left'], ['ArrowDown', 'Down'], ['ArrowRight', 'Right'], ['Comma', ','], ['Period', '.'], ['Slash', '/'], ['KeyL', 'L']], main: ',', top: '.', power: '/', lock: 'L', drive: 'Arrow keys' },
+    ];
+    const arenaLabel = (id) => (id === 'random' ? 'Random arena' : ARENAS[id].name);
+    const go = () => {
+      if (!(st.ready[0] && st.ready[1])) return;
+      setTimeout(() => Flow.startVersus({ a: choices[st.pick[0]], b: choices[st.pick[1]], arena: arenas[st.arena], score: st.score }), 250);
+    };
+    const cycle = (p, d) => { if (st.ready[p]) return; st.pick[p] = (st.pick[p] + d + choices.length) % choices.length; Audio.click(); render(); };
+    const toggleReady = (p) => { st.ready[p] = !st.ready[p]; Audio.play('ratchet', { vol: 0.5 }); render(); go(); };
+    const arenaStep = (d) => { st.arena = (st.arena + d + arenas.length) % arenas.length; st.ready = [false, false]; Audio.click(); render(); };
+    const buildFor = (c) => (c === 'garage' ? currentBuild() : rosterBuild(c));
+    const line = (label, part, key, hold) => h('.vsline', {}, h('span.lab', {}, label), h('span.val', {}, part ? PARTS[part.id].name : '-'), part ? h('kbd', {}, key) : null, part && hold ? h('span.note', {}, 'tap on/off') : null);
+    const card = (p) => {
+      const K = KEYS[p], c = choices[st.pick[p]], b = buildFor(c);
+      const garage = c === 'garage';
+      const name = garage ? Save.data.name : RIVALS[c - 1].name;
+      const main = b.main && PARTS[b.main.id], top = b.top && PARTS[b.top.id];
+      return h(`.vscard.panel.pl${p + 1}${st.ready[p] ? '.isready' : ''}`, {},
+        h('.vshead', {}, h('span.who', {}, K.name), st.ready[p] ? h('span.tagnew', {}, 'READY') : null),
+        h('.vsname', {}, btn('<', () => cycle(p, -1), 'small', { 'aria-label': `${K.name} previous robot` }), h('h3', {}, name), btn('>', () => cycle(p, 1), 'small', { 'aria-label': `${K.name} next robot` })),
+        h('.vspics', {}, b.main ? thumb(b.main.id) : null, thumb(b.chassis.id), thumb(b.drive.id), b.top ? thumb(b.top.id) : null, b.power ? thumb(b.power.id) : null),
+        garage ? h('p.note', { style: { color: '#ffc21a', fontWeight: 700 } }, 'Your garage build: not balanced') : null,
+        line('Drive', b.drive, K.drive, false),
+        line('Weapon', b.main, K.main, main && main.use === 'hold'),
+        line('Top', b.top, K.top, top && top.hold),
+        line('Power', b.power, K.power, false),
+        h('.vsline', {}, h('span.lab', {}, 'Lock on'), h('span.val', {}, 'Face the rival'), h('kbd', {}, K.lock)),
+        h('.vsstrip', {}, K.strip.map(([code, l]) => h(`kbd${st.held.has(code) ? '.lit' : ''}`, {}, l))),
+        btn(st.ready[p] ? `Not ready (${K.main})` : `Ready (${K.main})`, () => toggleReady(p), st.ready[p] ? '' : 'primary'));
+    };
+    const root = h('.screen.vsselect');
+    const render = () => {
+      root.innerHTML = '';
+      root.append(
+        h('.spread', {}, h('h2', {}, 'Versus'), st.score[0] + st.score[1] > 0 ? h('.vsscore', {}, `P1 ${st.score[0]} : ${st.score[1]} P2`) : null, btn('Back', () => Flow.title(), 'small')),
+        h('.vsrow', {}, card(0), card(1)),
+        h('.vsarena.panel', {}, btn('<', () => arenaStep(-1), 'small', { 'aria-label': 'Previous arena' }), h('h3', {}, arenaLabel(arenas[st.arena])), btn('>', () => arenaStep(1), 'small', { 'aria-label': 'Next arena' }), h('span.note', {}, 'W / S or Up / Down')),
+        h('p.note', {}, 'Press your keys to test them. Some keyboards can\'t read every combination: if a key doesn\'t light with others held, try a different one, or another keyboard.'));
+    };
+    render();
+    this.add(root);
+    const KEYSET = new Set(KEYS.flatMap((k) => k.strip.map((x) => x[0])));
+    this.vsListen({
+      keydown: (e) => {
+        if (KEYSET.has(e.code) || e.code === 'Escape') { e.preventDefault(); e.stopPropagation(); } else return;
+        if (KEYSET.has(e.code) && !st.held.has(e.code)) { st.held.add(e.code); render(); }
+        if (e.repeat) return;
+        if (e.code === 'Escape') { Flow.title(); return; }
+        if (e.code === 'KeyA') cycle(0, -1);
+        if (e.code === 'KeyD') cycle(0, 1);
+        if (e.code === 'ArrowLeft') cycle(1, -1);
+        if (e.code === 'ArrowRight') cycle(1, 1);
+        if (e.code === 'KeyW' || e.code === 'ArrowUp') arenaStep(-1);
+        if (e.code === 'KeyS' || e.code === 'ArrowDown') arenaStep(1);
+        if (e.code === 'KeyF') toggleReady(0);
+        if (e.code === 'Comma') toggleReady(1);
+      },
+      keyup: (e) => { if (st.held.delete(e.code)) { e.stopPropagation(); render(); } },
+    });
+  },
+  versusPrefight(cfg) {
+    const f = G.fight;
+    const [a, b] = f.robots;
+    const legend = (p, K) => h('.vsleg', {}, h('b', { class: `pl${p}` }, `P${p}`), `${K.drive}  Weapon ${K.main}  Top ${K.top}  Power ${K.power}  Lock ${K.lock}`);
+    const begin = () => Flow.beginFight();
+    this.add(h('.screen.prefight', {},
+      h('.pf-top', {}, h('.lg', {}, 'Versus'), h('.arena', {}, ARENAS[f.arenaId].name)),
+      h('.pf-bot.vspf', {},
+        h('.who', {},
+          h('.rname', { style: { color: 'var(--white)' } }, h('span.pl1', {}, a.name), h('span.vsvs', {}, ' vs '), h('span.pl2', {}, b.name)),
+          legend(1, { drive: 'W A S D', main: 'F', top: 'G', power: 'H', lock: 'R' }),
+          legend(2, { drive: 'Arrows', main: ',', top: '.', power: '/', lock: 'L' })),
+        h('.pf-btn', {}, btn('Fight', begin, 'yellow'), btn('Change robots', () => Flow.versus(), 'small')))));
+    this.vsListen({ keydown: (e) => { if (e.repeat) return; if (e.code === 'KeyF' || e.code === 'Comma' || e.code === 'Enter') { e.preventDefault(); e.stopPropagation(); begin(); } else if (e.code === 'Escape') { e.preventDefault(); e.stopPropagation(); Flow.versus(); } } });
+  },
+  versusResult(r, cfg) {
+    const f = G.fight;
+    const why = { ko: 'Knockout.', hazard: 'The arena finished it.', ringout: 'Off the edge.', pit: 'Into the pit.', immobile: 'Sat still too long.', decision: 'Time: more health left.', draw: 'Dead level. No score.' }[r.cause];
+    const title = r.winner === -1 ? 'Draw' : `Player ${r.winner + 1} wins`;
+    this.add(h('.screen.center', {},
+      h(`h2.${r.winner === 1 ? 'vswon2' : 'won'}`, {}, title),
+      r.winner === -1 ? null : h('p', {}, `${f.robots[r.winner].name}. ${why}`),
+      r.winner === -1 ? h('p', {}, why) : null,
+      h('.vsscore', {}, `P1 ${cfg.score[0]} : ${cfg.score[1]} P2`),
+      h('.row', { style: { justifyContent: 'center' } }, btn('Rematch', () => Flow.startVersus(cfg), 'primary'), btn('Change robots', () => Flow.versus()), btn('Title', () => Flow.title()))));
+    this.vsListen({ keydown: (e) => { if (e.repeat || e.code !== 'Enter') return; e.preventDefault(); e.stopPropagation(); Flow.startVersus(cfg); } });
+  },
+
   // ---- pause and results -----------------------------------------------
   pause() {
+    if (G.mode === 'versus') {
+      this.modal(
+        h('h2', {}, 'Paused'),
+        h('.menu', { style: { width: '100%' } },
+          btn('Resume', () => Flow.resume(), 'primary'),
+          btn('Restart match', () => { this.closeModal(); Flow.retry(); }),
+          btn('Change robots', () => { this.closeModal(); Flow.quitToGarage(); }),
+          btn(Audio.mutedAll ? 'Unmute' : 'Mute', () => { toggleMute(); this.pause(); }),
+          btn('Title', () => { this.closeModal(); Flow.title(); })));
+      return;
+    }
     this.modal(
       h('h2', {}, 'Paused'),
       h('.menu', { style: { width: '100%' } },

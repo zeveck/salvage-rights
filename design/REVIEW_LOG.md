@@ -95,3 +95,18 @@ Reviewers found no new structural problems; they found numeric and coverage gaps
 | Weapon state silent | should | Design check | Fixed: code-made SFX |
 | Lava and code props have no surface art | should | Design check | Fixed: steel trim sheet, lava tile |
 | Sovereign rail on top not on contact sheet | should | Design check | Fixed: per-chassis override and a contact sheet row |
+
+## Versus change: one short round
+
+| Finding | Severity | Evidence | Outcome |
+|---|---|---|---|
+| Ties and double KOs undefined, default favors P1 | must | Code read: sim.js checkEnd | Fixed: health at the horn; draw otherwise |
+| Keys jam: rollover, hands too close, career keys reused | must | Code read and judgment | Fixed: separate map, P2 on , . /, toggled hold weapons, live key strip |
+| Fight flow keyed to ladder, ends in career writes | must | main.js koDone, state.js recordWin | Fixed: G.mode guards; tested byte-for-byte |
+| Input is one merged player | must | input.js | Fixed: per-player state and consumeVersus |
+| 30-70% target failed and untunable | must | Bot round-robin | Partly fixed: roster of one per weapon, Versus-only tuning; see tools/versus.mjs and the report |
+| Player 0 hard-coded in sim, HUD, events | must | sim.js, ui.js, main.js | Fixed: aimAssist option, per-robot HUD, named callouts |
+| Incidental save writes | must | main.js fightSeed, seen, setCamera, toggleMute | Fixed: none in Versus |
+| Select: no un-ready, arena swaps, no info | should | Judgment | Fixed |
+| Fairness test only covers bots, no kiter | should | Judgment | Partly: leader drain added; no kiter bot, and only people can really judge fairness |
+| Can't tell which robot is yours | should | Design check | Fixed: colors, tags, HUD status |

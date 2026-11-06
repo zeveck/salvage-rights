@@ -319,6 +319,7 @@ export class ArenaView {
       hg.add(mesh);
       g.add(hg);
       this.swing = hg;
+      hg.visible = false;
       hg.rotation.z = -1.25;
       // The pit: a black disc under two floor halves.
       const pit = new THREE.Mesh(new THREE.CircleGeometry(3.5, 40), new THREE.MeshBasicMaterial({ color: 0x030304 }));

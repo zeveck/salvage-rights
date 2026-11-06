@@ -3,7 +3,7 @@
 const SFX_FILES = [
   'spinner', 'saw', 'hammer', 'clang-s', 'clang-m', 'clang-l', 'flipper', 'drill', 'flame', 'arc', 'rail-charge', 'rail-fire', 'autocannon', 'rocket', 'explosion', 'shield', 'overdrive', 'emp', 'repair', 'jets', 'motor', 'tread', 'hover', 'stomp', 'ratchet', 'cash', 'spray', 'horn', 'crowd-roar', 'crowd', 'lava', 'electric', 'ice', 'wind', 'crusher', 'pit', 'swing', 'fall',
 ];
-const VOICE_FILES = ['countdown', 'ko', 'ringout', 'flawless', 'backstab', 'hazard', 'judges', 'champion', 'salvage', 'moveit'];
+const VOICE_FILES = ['countdown', 'ko', 'ringout', 'flawless', 'backstab', 'hazard', 'judges', 'champion', 'salvage', 'moveit', 'p1wins', 'p2wins', 'draw'];
 
 export const Audio = {
   ctx: null, master: null, musicGain: null, sfxGain: null, filter: null,

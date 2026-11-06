@@ -43,6 +43,22 @@ You are in the driver's booth with a remote control. Your robot steers toward wh
 
 Empty their health, knock them off the arena, or out-damage them by the horn. Hits to the rear do more. Losing costs nothing but pride: retry for free, and the sponsors chip in some scrap. Your garage and progress are saved in your browser.
 
+## Versus
+
+Two players, one keyboard. Pick from eight robots (or bring your garage build), pick an arena, and settle it. Nothing in Versus touches your career.
+
+![Two robots fighting in Versus](media/screenshots/versus.png)
+
+| | Player 1 | Player 2 |
+|---|---|---|
+| **Drive** | W A S D | Arrow keys |
+| **Weapon** | F | , |
+| **Top mount** | G | . |
+| **Power** | H | / |
+| **Lock on** | R | L |
+
+Weapons that run while held switch on and off with a tap, so fewer keys are down at once. Some keyboards still can't read every combination; the select screen lets you test yours. Versus needs a keyboard, so it isn't offered on phones.
+
 ## How it was made
 
 Salvage Rights was made by [Claude Code](https://claude.com/claude-code) with [gamegen](https://github.com/zeveck/gamegen), from this request:
@@ -51,6 +67,10 @@ Salvage Rights was made by [Claude Code](https://claude.com/claude-code) with [g
 > robot, which upgrades you. You go through a series of battles getting stronger and moving thorugh the ranks to be the battle champion. Between battles there's a "garage" or something where you can change
 > out your parts/buffs. You can also sell/buy between things in the garage. There should be a variety of arenas. It should probably be a 3d game. You remote control during the fight. You can have cool
 > weapons, powers, etc. You can also redesign/paint your robot. --budget 25 --3d --publish --no-confirm
+
+Then, to add a two-player mode:
+
+> --change add a two-player mode on one keyboard --publish --no-confirm
 
 gamegen designed the game, had review agents polish the design, made the art, music and sound with these plugins, built it, and play-tested it:
 
