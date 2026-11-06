@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Salvage Rights: a build-and-brawl robot arena game</title>
+<meta name="description" content="Beat them. Strip them. Bolt it on. Remote-control a junk-box robot through six leagues of arena fights and take a part from every wreck until you are the champion.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14171c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="canonical" href="https://zeveck.github.io/salvage-rights/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://zeveck.github.io/salvage-rights/">
+<meta property="og:title" content="Salvage Rights">
+<meta property="og:description" content="Beat them. Strip them. Bolt it on. Build a robot from the wrecks of everyone you beat.">
+<meta property="og:image" content="https://zeveck.github.io/salvage-rights/social-card.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="An orange and steel battle robot under arena spotlights, with the title Salvage Rights">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://zeveck.github.io/salvage-rights/social-card.jpg">
+<link rel="preload" href="fonts/Teko.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/Rajdhani-Medium.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/Rajdhani-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js", "three/addons/": "./vendor/addons/" } }
+</script>
+</head>
+<body>
+<canvas id="view"></canvas>
+<div id="static" aria-hidden="true"></div>
+<div id="numbers" aria-hidden="true"></div>
+<div id="hud" class="hidden"></div>
+<div id="touch" class="hidden"></div>
+<div id="ui"></div>
+<div id="rotate" class="hidden">
+  <svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true"><path fill="none" stroke="#ffc21a" stroke-width="4" d="M22 8h20a4 4 0 0 1 4 4v40a4 4 0 0 1-4 4H22a4 4 0 0 1-4-4V12a4 4 0 0 1 4-4z"/><path fill="none" stroke="#eef2f5" stroke-width="4" stroke-linecap="round" d="M52 22c6 6 6 14 0 20M12 42c-6-6-6-14 0-20"/></svg>
+  <p>Turn your phone sideways to drive.</p>
+</div>
+<div id="boot">
+  <div class="boot-title">SALVAGE RIGHTS</div>
+  <div class="boot-bar"><div id="boot-fill" style="width:8%"></div></div>
+</div>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
